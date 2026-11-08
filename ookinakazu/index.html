@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>おおきなかず</title>
+<style>
+:root{--bg:#fff7e0;--card:#ffffff;--ink:#3b2f1e;--main:#ff8a3d;--main2:#ffb36b;--blue:#3d8bff;--green:#2fb36b;--red:#e5484d;--key:#fff0cc;--line:#3b2f1e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2217;--card:#3a2f20;--ink:#fff3dc;--key:#4d3f2a;--line:#fff3dc}}
+:root[data-theme="dark"]{--bg:#2a2217;--card:#3a2f20;--ink:#fff3dc;--key:#4d3f2a;--line:#fff3dc}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;overflow:hidden}
+.screen{display:none;height:100%;flex-direction:column;align-items:center;padding:12px;position:relative}
+.screen.on{display:flex}
+button{font:inherit;color:inherit;cursor:pointer;border:0;border-radius:16px;touch-action:manipulation}
+.big{background:var(--main);color:#fff;font-size:clamp(22px,5vw,34px);font-weight:700;padding:16px 36px;box-shadow:0 5px 0 #c4621f;margin:10px}
+.big.b{background:var(--blue);box-shadow:0 5px 0 #2563c4}
+.big:active{transform:translateY(3px);box-shadow:0 2px 0 #c4621f}
+#fs{position:absolute;left:10px;top:calc(env(safe-area-inset-top,0px) + 10px);background:var(--card);padding:8px 12px;font-size:16px;border:2px solid var(--main)}
+#start{justify-content:center}
+h1{font-size:clamp(44px,11vw,88px);margin:0 0 20px;color:var(--main);text-shadow:0 4px 0 rgba(0,0,0,.12);letter-spacing:.08em}
+#credit{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;text-align:center;font-size:18px;opacity:.8}
+.top{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:20px}
+.top button{background:var(--card);padding:6px 12px;border:2px solid var(--main);font-size:15px}
+.q{width:100%;max-width:720px;background:var(--card);border-radius:20px;padding:10px 14px;text-align:center;margin:6px 0;box-shadow:0 3px 0 rgba(0,0,0,.1)}
+.qnum{font-size:clamp(34px,9vw,56px);font-weight:800;letter-spacing:.06em}
+.ask{font-size:16px;opacity:.8}
+.ans{min-height:56px;font-size:clamp(30px,8vw,48px);font-weight:800;color:var(--blue);display:flex;justify-content:center;align-items:center;gap:8px;word-break:break-all}
+.ans .box{min-width:60px;border-bottom:4px solid var(--blue);padding:0 8px}
+.ans .u{color:var(--ink)}
+#fb{height:44px;font-size:clamp(22px,6vw,32px);font-weight:800;display:flex;align-items:center;justify-content:center}
+#fb.ok{color:var(--green)}#fb.ng{color:var(--red)}
+.keys{width:100%;max-width:720px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:auto;padding-bottom:6px}
+.k{background:var(--key);font-size:clamp(20px,5vw,34px);font-weight:700;padding:10px 0;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.k:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.k.u2{background:var(--main2)}
+.k.fn{font-size:clamp(15px,3.6vw,20px);background:var(--card);border:2px solid var(--main)}
+.k.go{background:var(--green);color:#fff;grid-column:span 2;font-size:clamp(18px,4.4vw,26px)}
+svg{width:100%;max-width:720px;height:auto}
+#res h2{font-size:clamp(30px,8vw,56px);margin:30px 0 6px}
+#res .sc{font-size:clamp(22px,6vw,36px);margin-bottom:16px}
+#cf{position:fixed;inset:0;pointer-events:none;z-index:9}
+</style>
+</head>
+<body>
+<canvas id="cf"></canvas>
+
+<section id="start" class="screen on">
+  <button id="fs">⛶ ぜんがめん</button>
+  <h1>おおきなかず</h1>
+  <button class="big" onclick="begin('easy')">かんたん</button>
+  <button class="big b" onclick="begin('hard')">むずかしい</button>
+  <div id="credit">きだっち＠明倫小</div>
+</section>
+
+<section id="quiz" class="screen">
+  <div class="top"><span id="prog"></span><button onclick="show('start')">もどる</button></div>
+  <div class="q" id="qbox"></div>
+  <div class="ans" id="ans"></div>
+  <div id="fb"></div>
+  <div class="keys" id="keys"></div>
+</section>
+
+<section id="res" class="screen" style="justify-content:center;text-align:center">
+  <h2 id="rt"></h2><div class="sc" id="rs"></div>
+  <button class="big" onclick="begin(mode)">もういちど</button>
+  <button class="big b" onclick="show('start')">さいしょにもどる</button>
+</section>
+
+<script>
+const $=id=>document.getElementById(id);
+const KD="〇一二三四五六七八九";
+let mode,qi,miss,ans,target,solved,Q;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id!=='res')stopCf();speechSynthesis&&speechSynthesis.cancel()}
+$('fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+
+/* ---------- audio ---------- */
+let ac;
+function tone(f,t,d,type='triangle',v=.2){ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(ac.destination);
+const s=ac.currentTime+t;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.02);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d+.05)}
+const N={C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,C5:523,D5:587,E5:659,F5:698,G5:784,A5:880,C6:1047};
+function play(seq){try{seq.forEach(([n,t,d])=>tone(N[n],t,d))}catch(e){}}
+const okSnd=()=>play([['C5',0,.15],['E5',.15,.15],['G5',.3,.15],['C6',.45,.4]]);
+const ngSnd=()=>{try{tone(220,0,.25,'sine',.2);tone(185,.22,.35,'sine',.2)}catch(e){}};
+const fanfare=()=>play([['C5',0,.2],['C5',.2,.2],['C5',.4,.2],['G4',.6,.3],['A4',.9,.2],['B4',1.1,.2],['C5',1.3,.3],['E5',1.65,.2],['G5',1.9,.2],['E5',2.15,.2],['G5',2.4,.2],['C6',2.7,.9],['A5',3.1,.2],['G5',3.4,.2],['C6',3.7,.9]]);
+
+/* ---------- number helpers ---------- */
+function toKanji(n){
+ const sec=x=>{let s='';[[1000,'千'],[100,'百'],[10,'十']].forEach(([m,c])=>{const d=Math.floor(x/m)%10;if(d)s+=(d>1?KD[d]:'')+c});const o=x%10;if(o)s+=KD[o];return s};
+ let s='';const oku=Math.floor(n/1e8),man=Math.floor(n%1e8/1e4),r=n%1e4;
+ if(oku)s+=sec(oku)+'億';if(man)s+=sec(man)+'万';s+=sec(r);
+ return s.replace(/^千万/,'千万').replace(/(^|[^千百十一二三四五六七八九])万/,'$1一万');
+}
+function parse(s){const V={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9},M={十:10,百:100,千:1000};
+ let tot=0,sec=0,d=0;
+ for(const c of s){if(V[c])d=V[c];else if(M[c]){sec+=(d||1)*M[c];d=0}
+ else if(c==='万'||c==='億'){sec+=d;d=0;tot+=(sec||1)*(c==='万'?1e4:1e8);sec=0}}
+ return tot+sec+d}
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function easyNum(){const len=R(5,8);let s='';for(let i=0;i<len;i++){s+=(i===0)?R(1,9):(Math.random()<.35?0:R(1,9))}
+ let n=+s;if(n%10===0&&Math.random()<.3)n+=R(1,9);return n}
+function group(n){const s=String(n);return s.length>4?s.slice(0,-4)+' '+s.slice(-4):s}
+
+/* ---------- game ---------- */
+function makeHard(i){
+ let u,s;
+ if(i===0){u=1000;s=0}else if(i===1){u=500;s=R(0,1)*5000;}else if(i===2){u=100;s=R(0,9)*1000}
+ else{u=[10,20,50,100,200,500,1000][R(0,6)];const span=u*10;s=R(0,Math.floor((10000-span)/span))*span}
+ const k=R(1,9);return{u,s,k,ans:s+k*u}}
+function begin(m){mode=m;qi=0;miss=0;Q=[];for(let i=0;i<5;i++)Q.push(m==='easy'?easyNum():makeHard(i));show('quiz');load()}
+function load(){
+ ans='';solved=false;$('fb').textContent='';$('fb').className='';
+ $('prog').textContent=`${qi+1} / 5 もん　（${mode==='easy'?'かんたん':'むずかしい'}）`;
+ const q=Q[qi];
+ if(mode==='easy'){
+  $('qbox').innerHTML=`<div class="ask">この かずを かん字で いれましょう</div><div class="qnum">${group(q)}</div>`;
+ }else{
+  const x0=40,x1=600,W=x1-x0;let t='';
+  for(let i=0;i<=10;i++){const x=x0+W*i/10;t+=`<line x1="${x}" x2="${x}" y1="${i%5?78:70}" y2="96" stroke="var(--line)" stroke-width="3"/>`}
+  const mx=x0+W*q.k/10;
+  t=`<line x1="${x0-10}" x2="${x1+10}" y1="86" y2="86" stroke="var(--line)" stroke-width="4"/>`+t+
+  `<path d="M${mx} 84 l-12 -22 h24z" fill="var(--red)"/><rect x="${mx-18}" y="14" width="36" height="34" rx="8" fill="var(--red)"/><text x="${mx}" y="40" text-anchor="middle" font-size="26" font-weight="800" fill="#fff">？</text><line x1="${mx}" x2="${mx}" y1="48" y2="62" stroke="var(--red)" stroke-width="4"/>`+
+  `<text x="${x0}" y="130" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)">${q.s}万</text>`+
+  `<text x="${x1}" y="130" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)">${q.s+q.u*10===10000?'1億':(q.s+q.u*10)+'万'}</text>`;
+  $('qbox').innerHTML=`<div class="ask">？は いくつですか。（１おく ＝ １００００万）</div><svg viewBox="0 0 640 145">${t}</svg>`;
+ }
+ buildKeys();draw();
+}
+function buildKeys(){
+ const k=$('keys');k.innerHTML='';
+ const add=(t,cls,fn)=>{const b=document.createElement('button');b.className='k '+cls;b.textContent=t;b.onclick=fn;k.appendChild(b)};
+ if(mode==='easy'){
+  [...'一二三四五六七八九'].forEach(c=>add(c,'',()=>inp(c)));
+  [...'十百千万億'].forEach(c=>add(c,'u2',()=>inp(c)));
+  add('ヒント','fn',hint);
+ }else{
+  [1,2,3,4,5,6,7,8,9,0].forEach(c=>add(c,'',()=>inp(String(c))));
+ }
+ add('けす','fn',()=>{if(solved)return;ans=ans.slice(0,-1);draw()});
+ add('やり直す','fn',()=>{if(solved)return;ans='';$('fb').textContent='';draw()});
+ add(solved?'つぎへ':'こたえあわせ','go',check);
+ if(mode==='easy'){k.style.gridTemplateColumns='repeat(9,1fr)';const sp=[[14,2],[15,2],[16,3],[17,6]];sp.forEach(([i,n])=>k.children[i].style.gridColumn='span '+n);for(let i=0;i<14;i++)k.children[i].style.padding='10px 0'}else{k.style.gridTemplateColumns=''}
+}
+function inp(c){if(solved)return;if(ans.length>=(mode==='easy'?14:4))return;ans+=c;$('fb').textContent='';draw()}
+function draw(){
+ $('ans').innerHTML=mode==='easy'?`<span class="box">${ans||'　'}</span>`:`<span class="box">${ans||'　'}</span><span class="u">万</span>`;
+ const go=$('keys').lastChild;if(go)go.textContent=solved?(qi===4?'けっかを見る':'つぎへ'):'こたえあわせ';
+}
+function hint(){
+ const t=toKanji(Q[qi]);
+ if(!('speechSynthesis' in window)){$('fb').textContent=t;return}
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=.8;speechSynthesis.speak(u)}
+function check(){
+ if(solved){if(qi===4)return finish();qi++;return load()}
+ if(!ans)return;
+ const ok=mode==='easy'?parse(ans)===Q[qi]:(+ans===Q[qi].ans);
+ if(ok){solved=true;$('fb').textContent='⭕ せいかい！';$('fb').className='ok';okSnd()}
+ else{miss++;$('fb').textContent='もうちょっと';$('fb').className='ng';ngSnd()}
+ draw();
+}
+function finish(){
+ show('res');
+ if(miss===0){$('rt').textContent='🎉 ぜんもん せいかい！ 🎉';$('rs').textContent='すごい！ かんぺき です！';fanfare();confetti()}
+ else{$('rt').textContent='おつかれさま！';$('rs').textContent=`まちがえた かいすう：${miss}かい　もういちど ちょうせん しよう`}
+}
+
+/* ---------- confetti ---------- */
+let raf,P=[];
+function confetti(){
+ const c=$('cf'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+ const cols=['#ff5a7a','#ffb300','#3d8bff','#2fb36b','#b36bff','#ff8a3d'];
+ P=Array.from({length:160},()=>({x:Math.random()*c.width,y:-Math.random()*c.height,w:6+Math.random()*8,h:10+Math.random()*10,vy:2+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[R(0,5)]}));
+ cancelAnimationFrame(raf);
+ (function f(){x.clearRect(0,0,c.width,c.height);
+  P.forEach(p=>{p.y+=p.vy;p.x+=p.vx+Math.sin(p.y/30);p.r+=p.vr;if(p.y>c.height){p.y=-20;p.x=Math.random()*c.width}
+   x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});
+  raf=requestAnimationFrame(f)})();
+}
+function stopCf(){cancelAnimationFrame(raf);const c=$('cf');c.getContext('2d').clearRect(0,0,c.width,c.height)}
+</script>
+</body>
+</html>
