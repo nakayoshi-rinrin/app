@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>重さをしらべよう</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#e8f6ff;--ink:#2b3a55;--ac:#ff7a59;--ac2:#3b9ae1}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden;user-select:none}
+section{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:12px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+section.on{display:flex}
+h1{font-size:clamp(34px,8vw,72px);margin:auto 0 12px;color:var(--ac);text-shadow:3px 3px 0 #fff}
+.btn{font:inherit;font-weight:700;border:0;border-radius:18px;padding:14px 28px;font-size:clamp(20px,4vw,30px);color:#fff;background:var(--ac2);box-shadow:0 5px 0 #2477b8;cursor:pointer;margin:8px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #2477b8}
+.btn.e{background:#4cba6a;box-shadow:0 5px 0 #2f8a47}.btn.h{background:var(--ac);box-shadow:0 5px 0 #c4502f}
+.btn.s{background:#fff;color:var(--ink);box-shadow:0 4px 0 #b9c8d8;font-size:16px;padding:8px 14px}
+#fs{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:10px;margin:0}
+.credit{margin-top:auto;font-size:20px;font-weight:700;padding:8px}
+.top{width:100%;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:clamp(16px,3vw,24px)}
+#svgw{flex:1;min-height:0;width:100%;display:flex;justify-content:center}
+svg{height:100%;max-width:100%}
+#ans{font-size:clamp(28px,6vw,44px);font-weight:700;background:#fff;border-radius:16px;padding:4px 20px;margin:4px;min-width:200px;text-align:center;border:3px solid var(--ac2)}
+#fb{height:1.4em;font-size:clamp(22px,4.5vw,34px);font-weight:700;color:var(--ac)}
+#pad{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;width:min(100%,760px)}
+#pad .btn{margin:0;padding:10px 0;font-size:clamp(20px,5vw,30px);background:#fff;color:var(--ink);box-shadow:0 4px 0 #b9c8d8}
+#acts{display:flex}
+#acts .btn{margin:6px 8px;padding:10px 22px}
+@media(max-width:560px){#pad{grid-template-columns:repeat(5,1fr)}}
+canvas{position:fixed;inset:0;pointer-events:none;z-index:9}
+.big{font-size:clamp(28px,6vw,52px);font-weight:700;text-align:center;margin:auto 0 10px}
+#item{animation:bn .6s}@keyframes bn{0%{transform:translateY(-40px);opacity:0}100%{transform:none;opacity:1}}
+</style></head><body>
+<section id="start" class="on">
+<button class="btn s" id="fs">⛶ 全画面</button>
+<h1>⚖️ 重さをしらべよう</h1>
+<div style="text-align:center">
+<button class="btn e" data-m="easy">かんたん<br><small style="font-size:.6em">1kgまで・10gずつ</small></button>
+<button class="btn h" data-m="hard">むずかしい<br><small style="font-size:.6em">2kgまで・10gずつ</small></button></div>
+<div class="credit">きだっち＠明倫小</div>
+</section>
+
+<section id="game">
+<div class="top"><button class="btn s" id="home">← もどる</button><span id="qn"></span><span id="md"></span></div>
+<div id="svgw"><svg id="sv" viewBox="0 0 400 440"></svg></div>
+<div id="fb"></div>
+<div id="ans"></div>
+<div id="pad"></div>
+<div id="acts"><button class="btn h" id="clr">やり直す</button><button class="btn e" id="ok">こたえる</button></div>
+</section>
+
+<section id="end">
+<div class="big" id="et"></div>
+<div style="margin-bottom:auto"><button class="btn e" id="again">もういちど</button><button class="btn" id="top">トップへ</button></div>
+</section>
+<canvas id="cv"></canvas>
+
+<script>
+const $=id=>document.getElementById(id);
+let AC;
+function ac(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume();return AC}
+function tone(f,t,d,type,v){try{const a=ac(),o=a.createOscillator(),g=a.createGain();o.type=type||"triangle";o.frequency.value=f;o.connect(g);g.connect(a.destination);const s=a.currentTime+t;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v||.2,s+.02);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d+.05)}catch(e){}}
+const N={C:523,D:587,E:659,F:698,G:784,A:880,B:988,C2:1047,D2:1175,E2:1319,G2:1568,L:262,L2:220};
+function play(seq,st,type){seq.forEach((n,i)=>n&&tone(N[n],i*st,st*1.6,type))}
+const sndOK=()=>play(["C","E","G","C2","G","C2"],.13);
+const sndNG=()=>{tone(330,0,.3,"sine",.25);tone(262,.25,.45,"sine",.25)};
+const sndWin=()=>{play(["C","E","G","C2","","G","C2","E2","","E2","D2","C2","D2","E2","G2","","G2","E2","C2","G2","C2","","C2"],.17);play(["L","","L","","G","","G","","C","","C","","G","","G","","L","","L","","C","",""],.17,"square")};
+let mode,max,unit,n,deg,q,mist,cur,w,ans,lock,used;
+const items=["🍎","🍌","🍉","📚","🥔","🎒","🧸","🍞","🥕","🍊","👟","🐱"];
+const cx=200,cy=290;
+function P(r,i){const a=i*deg*Math.PI/180;return[cx+r*Math.sin(a),cy-r*Math.cos(a)]}
+function build(){
+let s='<ellipse cx="200" cy="425" rx="150" ry="12" fill="#0002"/><rect x="45" y="110" width="310" height="315" rx="45" fill="#ffb74d" stroke="#e08a1e" stroke-width="4"/><ellipse cx="200" cy="108" rx="105" ry="16" fill="#cfd8dc" stroke="#90a4ae" stroke-width="3"/><text id="item" x="200" y="106" font-size="100" text-anchor="middle">🍎</text><circle cx="200" cy="290" r="140" fill="#fff" stroke="#8d6e63" stroke-width="5"/>';
+for(let i=0;i<n;i++){const big=i%(n/10)==0,mid=i%(n/20)==0,r2=big?100:mid?108:118;const[a,b]=P(132,i),[c,d]=P(r2,i);s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${big?'#c62828':'#2b3a55'}" stroke-width="${big?3:mid?2:1.2}"/>`;
+if(big){const[x,y]=P(84,i);s+=`<text x="${x}" y="${y+6}" font-size="17" font-weight="700" text-anchor="middle" fill="#2b3a55">${i*unit}</text>`}}
+s+=`<text x="200" y="345" font-size="15" text-anchor="middle" fill="#c62828" font-weight="700">1めもり＝${unit}g</text><text x="200" y="252" font-size="18" text-anchor="middle" font-weight="700" fill="#2b3a55">g（グラム）</text>`;
+s+='<g id="nd" style="transform-origin:200px 290px;transform:rotate(0deg);transition:transform 1.4s cubic-bezier(.3,1.3,.5,1)"><polygon points="196,290 204,290 200,168" fill="#e53935"/></g><circle cx="200" cy="290" r="9" fill="#444"/>';
+$("sv").innerHTML=s}
+function showAns(){$("ans").textContent=(ans||"　")+" g"}
+function newQ(){
+q++;if(q>5)return finish();
+$("qn").textContent="もんだい "+q+" / 5";$("fb").textContent="";ans="";showAns();lock=false;
+do{w=unit*(1+Math.floor(Math.random()*(n-1)))}while(used.includes(w));used.push(w);
+const it=$("item");it.textContent=items[Math.floor(Math.random()*items.length)];it.style.animation="none";it.getBoundingClientRect();it.style.animation="";
+$("nd").style.transform="rotate(0deg)";setTimeout(()=>{$("nd").style.transform="rotate("+(w/unit*deg)+"deg)"},350)}
+function start(m){mode=m;max=m=="easy"?1000:2000;unit=10;n=max/unit;deg=360/n;q=0;mist=0;used=[];build();
+$("md").textContent=m=="easy"?"かんたん":"むずかしい";show("game");ac();newQ()}
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==id))}
+function check(){if(lock||!ans)return;
+if(+ans===w){lock=true;$("fb").textContent="せいかい！🎉";sndOK();setTimeout(newQ,2200)}
+else{mist++;$("fb").textContent="もうちょっと";sndNG();ans="";showAns();setTimeout(()=>{if(!lock)$("fb").textContent=""},1600)}}
+function finish(){show("end");
+if(mist==0){$("et").innerHTML="🎉 ぜんぶ せいかい！ 🎉<br>すごい！ はかりの名人！";sndWin();confetti()}
+else{$("et").innerHTML="おわり！<br>まちがい："+mist+"かい<br>つぎは ぜんぶ せいかいをめざそう！";play(["C","E","G","C2"],.15)}}
+// 花吹雪
+function confetti(){const c=$("cv"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+const cols=["#ffb7c5","#ff8fab","#fff0f3","#ffd166","#9be7a8","#8ecae6"];
+const ps=Array.from({length:160},()=>({x:Math.random()*c.width,y:-Math.random()*c.height,s:6+Math.random()*10,vy:1.5+Math.random()*3,vx:Math.random()*2-1,r:Math.random()*6,vr:Math.random()*.1-.05,c:cols[Math.floor(Math.random()*cols.length)],p:Math.random()*6}));
+const t0=performance.now();
+(function f(t){x.clearRect(0,0,c.width,c.height);const e=t-t0;
+ps.forEach(p=>{p.y+=p.vy;p.p+=.05;p.x+=p.vx+Math.sin(p.p)*1.2;p.r+=p.vr;if(p.y>c.height&&e<9000){p.y=-10;p.x=Math.random()*c.width}
+x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.beginPath();x.ellipse(0,0,p.s,p.s*.55,0,0,7);x.fill();x.restore()});
+if(e<12000)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})(t0)}
+// 初期化
+for(let i=0;i<10;i++){const b=document.createElement("button");b.className="btn";b.textContent=i;b.onclick=()=>{if(!lock&&ans.length<4){ans+=i;showAns()}};$("pad").appendChild(b)}
+document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>start(b.dataset.m));
+$("clr").onclick=()=>{if(!lock){ans="";showAns()}};
+$("ok").onclick=check;
+$("home").onclick=()=>{lock=true;show("start")};
+$("top").onclick=()=>show("start");
+$("again").onclick=()=>start(mode);
+$("fs").onclick=()=>{try{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const e=d.documentElement;(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}}catch(e){}};
+document.addEventListener("keydown",e=>{if(!$("game").classList.contains("on")||lock)return;if(/^\d$/.test(e.key)&&ans.length<4){ans+=e.key;showAns()}else if(e.key=="Enter")check();else if(e.key=="Backspace"){ans="";showAns()}});
+</script></body></html>
