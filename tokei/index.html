@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>とけい</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff8e1;--card:#fff;--ink:#4a3b2a;--main:#ff8a3d;--sub:#ffe0b2;--line:#ffcc80;--ok:#2e9e5b;--ng:#e5484d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2118;--card:#3a2e22;--ink:#fdf0dc;--sub:#5a4630;--line:#8a6a3a}}
+:root[data-theme="dark"]{--bg:#2a2118;--card:#3a2e22;--ink:#fdf0dc;--sub:#5a4630;--line:#8a6a3a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:440px;padding:16px;text-align:center}
+.screen{display:none}.screen.on{display:block}
+h1{font-size:44px;margin:24px 0 8px;color:var(--main)}
+.btn{display:block;width:100%;font:inherit;font-size:28px;font-weight:bold;border:none;border-radius:20px;padding:18px;margin:14px 0;color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.b1{background:#4caf7d}.b2{background:#f5a623}.b3{background:#e5484d}
+.fs{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;font:inherit;font-size:15px;font-weight:bold;color:var(--ink);background:var(--sub);border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
+.credit{margin-top:32px;font-size:16px;opacity:.7}
+.q{font-size:32px;font-weight:bold;margin:8px 0}
+.prog{font-size:16px;opacity:.7}
+svg{width:min(78vw,300px);height:auto;display:block;margin:4px auto}
+.hint{fill:var(--main);font-size:15px;font-weight:bold;text-anchor:middle;dominant-baseline:middle}
+.num{fill:var(--ink);font-size:24px;font-weight:bold;text-anchor:middle;dominant-baseline:middle}
+.pick{display:flex;justify-content:center;align-items:center;gap:8px;margin:6px 0}
+.wheel{position:relative;width:110px}
+.wheel .list{height:132px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;background:var(--card);border-radius:14px;border:3px solid var(--line)}
+.list::-webkit-scrollbar{display:none}
+.list div{height:44px;line-height:44px;font-size:28px;font-weight:bold;scroll-snap-align:center}
+.list .pad{height:44px}
+.band{position:absolute;left:0;right:0;top:44px;height:44px;border-top:3px solid var(--main);border-bottom:3px solid var(--main);pointer-events:none;background:rgba(255,138,61,.12)}
+.unit{font-size:28px;font-weight:bold}
+.row{display:flex;gap:10px;justify-content:center}
+.row .btn{margin:8px 0;font-size:22px;padding:14px}
+.fb{height:44px;font-size:30px;font-weight:bold;margin:4px 0}
+.ok{color:var(--ok)}.ng{color:var(--ng)}
+.big{font-size:30px;font-weight:bold;margin:30px 0;line-height:1.5;color:var(--main)}
+.icons{display:flex;justify-content:center;gap:28px}
+.ic{background:none;border:none;font:inherit;color:var(--ink);cursor:pointer}
+.ic span{display:flex;width:84px;height:84px;border-radius:50%;align-items:center;justify-content:center;font-size:42px;color:#fff;margin:0 auto 6px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.ic b{font-size:18px}
+</style></head><body><div id="app">
+
+<div id="top" class="screen on">
+<button class="fs" id="fs" aria-label="ぜんがめん">⛶ ぜんがめん</button>
+<h1>🕐 とけい</h1><div class="q">コースを えらんでね</div>
+<button class="btn b1" data-c="easy">かんたん</button>
+<button class="btn b2" data-c="normal">ふつう</button>
+<button class="btn b3" data-c="hard">むずかしい</button>
+<div class="credit">きだっち＠明倫小</div>
+</div>
+
+<div id="quiz" class="screen">
+<div class="prog" id="prog"></div>
+<div class="q">いまなんじ？</div>
+<svg id="clock" viewBox="0 0 300 300"></svg>
+<div class="pick">
+<div class="wheel"><div class="list" id="hw"></div><div class="band"></div></div><span class="unit">じ</span>
+<div class="wheel"><div class="list" id="mw"></div><div class="band"></div></div><span class="unit" id="mu">ふん</span>
+</div>
+<div class="fb" id="fb"></div>
+<div class="row"><button class="btn b2" id="hintBtn">💡 ヒント</button><button class="btn b1" id="ansBtn">こたえる</button></div>
+</div>
+
+<div id="end" class="screen">
+<div class="big">🎉<br>おめでとう！<br>つぎもがんばろうね！</div>
+<div class="icons">
+<button class="ic" id="again"><span style="background:#4caf7d">↻</span><b>もういちど</b></button>
+<button class="ic" id="quit"><span style="background:#999">✕</span><b>おわる</b></button>
+</div>
+</div>
+
+<div id="bye" class="screen"><div class="big">🌟<br>またあそぼうね！<br>ばいばい！</div>
+<button class="btn b2" id="back">さいしょへ</button></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const show=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))};
+let ac;
+function tone(f,t,d,type='triangle'){const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.0001,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(.25,ac.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+t+d);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+d+.05)}
+function play(notes,step=.16){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume();notes.forEach((n,i)=>n&&tone(n,i*step,step*1.6))}catch(e){}}
+const C=261.6,D=293.7,E=329.6,F=349.2,G=392,A=440,B=493.9,C2=523.3,E2=659.3,G2=784;
+const okSnd=()=>play([C2,E2,G2,C2*2],.13);
+const ngSnd=()=>play([E,D],.2);
+const winSnd=()=>play([C,E,G,C2,0,G,C2,E2,0,C2,E2,G2,G2,E2,G2,C2*2],.17);
+
+// clock
+const svg=$('clock');
+function drawClock(h,m,hint){
+let s='<circle cx="150" cy="150" r="106" fill="var(--card)" stroke="var(--main)" stroke-width="8"/>';
+for(let i=0;i<60;i++){const a=i*6*Math.PI/180,r1=i%5?100:94,x=Math.sin(a),y=-Math.cos(a);s+=`<line x1="${150+x*r1}" y1="${150+y*r1}" x2="${150+x*104}" y2="${150+y*104}" stroke="var(--ink)" stroke-width="${i%5?1:2}" opacity=".5"/>`}
+for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;s+=`<text class="num" x="${150+Math.sin(a)*76}" y="${150-Math.cos(a)*76}">${i}</text>`}
+if(hint)for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;s+=`<text class="hint" x="${150+Math.sin(a)*128}" y="${150-Math.cos(a)*128}">${i===12?0:i*5}</text>`}
+const ha=(h%12)*30+m*.5,ma=m*6;
+s+=`<line x1="150" y1="150" x2="150" y2="98" stroke="var(--ink)" stroke-width="9" stroke-linecap="round" transform="rotate(${ha} 150 150)"/>`;
+s+=`<line x1="150" y1="150" x2="150" y2="66" stroke="#e5484d" stroke-width="5" stroke-linecap="round" transform="rotate(${ma} 150 150)"/><circle cx="150" cy="150" r="7" fill="var(--main)"/>`;
+svg.innerHTML=s}
+
+// wheels
+function build(el,vals){el.innerHTML='<div class="pad"></div>'+vals.map(v=>`<div>${v[1]}</div>`).join('')+'<div class="pad"></div>';el._v=vals;el.scrollTop=0}
+const getV=el=>el._v[Math.max(0,Math.min(el._v.length-1,Math.round(el.scrollTop/44)))][0];
+
+// game
+let course,qs,qi,cur,hintOn,lock;
+const mins={easy:[0,30],normal:[0,5,10,15,20,25,30,35,40,45,50,55],hard:[...Array(60).keys()]};
+function makeQs(){const set=new Set();while(set.size<5){const h=1+Math.floor(Math.random()*12),m=mins[course][Math.floor(Math.random()*mins[course].length)];set.add(h+':'+m)}return [...set].map(k=>k.split(':').map(Number))}
+function start(c){course=c;qs=makeQs();qi=0;build($('hw'),[...Array(12).keys()].map(i=>[i+1,i+1]));build($('mw'),c==='easy'?[[0,'\u3000'],[30,'はん']]:mins[c].map(m=>[m,m]));$('mu').style.display=c==='easy'?'none':'';show('quiz');next0()}
+function next0(){cur=qs[qi];hintOn=false;lock=false;$('fb').textContent='';$('prog').textContent=`${qi+1} / 5 もんめ`;drawClock(cur[0],cur[1],false);$('hw').scrollTop=0;$('mw').scrollTop=0}
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{play([C2],.1);start(b.dataset.c)});
+$('hintBtn').onclick=()=>{hintOn=!hintOn;drawClock(cur[0],cur[1],hintOn)};
+$('ansBtn').onclick=()=>{if(lock)return;const fb=$('fb');
+if(getV($('hw'))===cur[0]&&getV($('mw'))===cur[1]){lock=true;fb.className='fb ok';fb.textContent='⭕ せいかい！';
+if(qi===4){winSnd();setTimeout(()=>show('end'),1400)}else{okSnd();setTimeout(()=>{qi++;next0()},1300)}}
+else{fb.className='fb ng';fb.textContent='もうちょっと';ngSnd()}};
+$('fs').onclick=()=>{const d=document,e=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}}catch(x){}};
+$('again').onclick=()=>show('top');
+$('quit').onclick=()=>show('bye');
+$('back').onclick=()=>show('top');
+</script></body></html>
