@@ -1,0 +1,640 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>主語と述語</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Yusei+Magic&display=swap" rel="stylesheet">
+<style>
+/* Layout: 1 column, notebook-paper ground, one big card for the sentence, chunk buttons that wrap. Blue = しゅご, red = じゅつご. */
+:root {
+  --bg: #e9f3f2;
+  --grid: #cfe1e0;
+  --paper: #ffffff;
+  --ink: #1b2a35;
+  --ink-soft: #51636e;
+  --line: #bcd2d2;
+  --subj: #1f66d1;
+  --subj-bg: #dce9fc;
+  --pred: #d63f2e;
+  --pred-bg: #fce1dc;
+  --good: #1f8a50;
+  --good-bg: #d8f1e2;
+  --warn: #b1560d;
+  --warn-bg: #fdebd4;
+  --mark: #ffd95a;
+  --on-accent: #ffffff;
+  --font-display: "Yusei Magic", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+  --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1c22; --grid: #1a2d36; --paper: #182a33; --ink: #eaf2f4; --ink-soft: #9db3bc; --line: #2f4955;
+    --subj: #86b4ff; --subj-bg: #1d3556; --pred: #ff8e7e; --pred-bg: #4a2420;
+    --good: #72d69d; --good-bg: #1c3d2c; --warn: #f3b46f; --warn-bg: #4a3317;
+    --mark: #7a5f10; --on-accent: #0f1c22;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1c22; --grid: #1a2d36; --paper: #182a33; --ink: #eaf2f4; --ink-soft: #9db3bc; --line: #2f4955;
+  --subj: #86b4ff; --subj-bg: #1d3556; --pred: #ff8e7e; --pred-bg: #4a2420;
+  --good: #72d69d; --good-bg: #1c3d2c; --warn: #f3b46f; --warn-bg: #4a3317;
+  --mark: #7a5f10; --on-accent: #0f1c22;
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--subj); outline-offset: 3px; }
+
+.app { position: relative; min-height: 100%; max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; }
+.screen { flex: 1; display: flex; flex-direction: column; min-height: 100%; }
+
+/* ---------- start ---------- */
+.fs-btn {
+  position: absolute; top: 12px; left: 0;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--paper); border: 3px solid var(--line); border-radius: 14px;
+  padding: 8px 14px; font-size: 16px; min-height: 48px; z-index: 2;
+}
+.fs-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.start-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding-block: 90px 110px; text-align: center; }
+.start-title {
+  font-family: var(--font-display); font-weight: 400; margin: 0;
+  font-size: clamp(1.2rem, 6vw, 3rem); line-height: 1.5;
+  background: linear-gradient(transparent 62%, var(--mark) 62%, var(--mark) 92%, transparent 92%);
+  padding: 0 .2em;
+}
+.start-title span { display: block; white-space: nowrap; }
+.mode { display: flex; gap: 6px; padding: 6px; background: var(--paper); border: 3px solid var(--line); border-radius: 999px; max-width: 100%; }
+.mode-btn { background: transparent; border: 0; border-radius: 999px; padding: 10px 26px; min-height: 52px; font-size: 1.3rem; font-weight: 900; color: var(--ink-soft); }
+.mode-btn.on { background: var(--subj); color: var(--on-accent); }
+.start-sub { margin: 0; color: var(--ink-soft); font-size: 1.1rem; }
+.big-btn {
+  background: var(--subj); color: var(--on-accent); border: 0; border-radius: 999px;
+  font-size: 1.7rem; font-weight: 900; padding: 14px 56px; min-height: 68px;
+  box-shadow: 0 6px 0 rgba(0,0,0,.22);
+}
+.big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
+.big-btn.alt { background: var(--paper); color: var(--ink); border: 3px solid var(--line); font-size: 1.2rem; padding: 10px 34px; min-height: 56px; box-shadow: none; }
+.credit {
+  position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  font-size: 1.15rem; color: var(--ink-soft);
+}
+
+/* ---------- quiz ---------- */
+.qwrap { padding-block: calc(18px + env(safe-area-inset-top, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 18px; flex: 1; }
+.qhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.qno { font-size: 1.2rem; }
+.dots { display: flex; gap: 10px; }
+.dot { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); background: var(--paper); }
+.dot.now { border-color: var(--subj); }
+.dot.ok { background: var(--good); border-color: var(--good); }
+.dot.ng { background: var(--warn); border-color: var(--warn); }
+.inst { align-self: flex-start; border-radius: 999px; padding: 6px 18px; font-size: 1.15rem; border: 3px solid; }
+.inst.s { background: var(--subj-bg); color: var(--subj); border-color: var(--subj); }
+.inst.p { background: var(--pred-bg); color: var(--pred); border-color: var(--pred); }
+.card { background: var(--paper); border: 3px solid var(--line); border-radius: 22px; padding: 38px 16px 30px; }
+.chunks { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px 12px; }
+.chunk {
+  position: relative; min-width: 0; max-width: 100%;
+  background: var(--paper); border: 3px solid var(--line); border-radius: 16px;
+  padding: 10px 16px; min-height: 66px;
+  font-size: clamp(1.45rem, 6vw, 2.2rem); font-weight: 900; line-height: 1.3;
+}
+.chunk:hover:not(:disabled) { border-color: var(--ink-soft); }
+.chunk:disabled { cursor: default; }
+.chunk .tag {
+  position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
+  font-size: 14px; font-weight: 900; padding: 1px 10px; border-radius: 999px; white-space: nowrap;
+}
+.chunk.pick-s { background: var(--subj-bg); border-color: var(--subj); color: var(--subj); }
+.chunk.pick-s .tag { background: var(--subj); color: var(--on-accent); }
+.chunk.pick-p { background: var(--pred-bg); border-color: var(--pred); color: var(--pred); }
+.chunk.pick-p .tag { background: var(--pred); color: var(--on-accent); }
+.chunk.show-s { border-color: var(--subj); background: var(--subj-bg); color: var(--subj); }
+.chunk.show-s .tag { background: var(--subj); color: var(--on-accent); }
+.chunk.show-p { border-color: var(--pred); background: var(--pred-bg); color: var(--pred); }
+.chunk.show-p .tag { background: var(--pred); color: var(--on-accent); }
+.chunk.wrong { border-style: dashed; border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
+.chunk.wrong .tag { background: var(--warn); color: var(--on-accent); }
+
+.tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.tool-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--paper); border: 3px solid var(--line); border-radius: 999px; padding: 8px 24px; min-height: 56px; font-size: 1.2rem; font-weight: 900; }
+.tool-btn svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.tool-btn:hover:not(:disabled) { border-color: var(--ink-soft); }
+.tool-btn:disabled { opacity: .4; cursor: default; }
+.tool-btn.speaking { border-color: var(--subj); color: var(--subj); background: var(--subj-bg); }
+.fb { border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; border: 3px solid; }
+.fb.ok { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.fb.ng { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.fb-title { font-family: var(--font-display); font-weight: 400; font-size: 2.2rem; line-height: 1.2; }
+.fb-detail { margin: 0; color: var(--ink); font-size: 1.1rem; }
+.fb-detail b { font-weight: 900; }
+.fb-detail .s { color: var(--subj); }
+.fb-detail .p { color: var(--pred); }
+
+/* ---------- result ---------- */
+.result { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; padding-block: calc(40px + env(safe-area-inset-top, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)); }
+.score { font-family: var(--font-display); font-size: clamp(2.2rem, 9vw, 3.6rem); line-height: 1.3; margin: 0; }
+.score em { font-style: normal; font-size: 1.5em; color: var(--subj); }
+.msg { margin: 0; font-size: 1.3rem; text-wrap: balance; }
+.perfect { font-family: var(--font-display); font-size: clamp(2rem, 8vw, 3.2rem); margin: 0; padding: 0 .3em; background: linear-gradient(transparent 62%, var(--mark) 62%, var(--mark) 92%, transparent 92%); text-wrap: balance; }
+.btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+
+#petals { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+</style>
+
+<div class="app">
+  <!-- スタート画面 -->
+  <section id="start" class="screen">
+    <button id="fs" class="fs-btn" type="button" aria-label="全画面表示">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      <span>全画面</span>
+    </button>
+    <div class="start-main">
+      <h1 class="start-title"><span>「しゅご」と「じゅつご」を</span><span>さがそう！</span></h1>
+      <div class="mode" role="radiogroup" aria-label="むずかしさ">
+        <button type="button" class="mode-btn on" role="radio" aria-checked="true" data-mode="easy">かんたん</button>
+        <button type="button" class="mode-btn" role="radio" aria-checked="false" data-mode="hard">むずかしい</button>
+      </div>
+      <p class="start-sub" id="sub">５もん ちょうせん</p>
+      <button id="go" class="big-btn" type="button">スタート</button>
+    </div>
+    <div class="credit">きだっち＠明倫小</div>
+  </section>
+
+  <!-- 問題画面 -->
+  <section id="quiz" class="screen" hidden>
+    <div class="qwrap">
+      <div class="qhead">
+        <div class="qno" id="qno">もんだい 1 / 5</div>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+      </div>
+      <div class="inst s" id="inst">しゅご（だれが・なにが）を えらぼう</div>
+      <div class="card"><div class="chunks" id="sentence"></div></div>
+      <div class="tools">
+        <button id="speak" class="tool-btn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+          <span>よみあげ</span>
+        </button>
+        <button id="undo" class="tool-btn" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+          <span>とりけし</span>
+        </button>
+      </div>
+      <div class="fb" id="fb" hidden aria-live="polite">
+        <div class="fb-title" id="fbTitle"></div>
+        <p class="fb-detail" id="fbDetail"></p>
+        <button id="next" class="big-btn" type="button">つぎへ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- けっか画面 -->
+  <section id="result" class="screen" hidden>
+    <div class="result">
+      <p class="perfect" id="perfect" hidden>ぜんぶ せいかい！ おめでとう！</p>
+      <p class="score" id="score"></p>
+      <p class="msg" id="msg"></p>
+      <div class="btns">
+        <button id="again" class="big-btn" type="button">もういちど</button>
+        <button id="home" class="big-btn alt" type="button">スタートへ</button>
+      </div>
+    </div>
+  </section>
+</div>
+<canvas id="petals" aria-hidden="true"></canvas>
+
+<script>
+/* ===== 問題 50 もん =====
+   [主語の修飾語, 主語, 述語の修飾語, 述語]  （修飾語は それぞれ 1つまで。空 "" は なし） */
+const BANK = [
+  ["", "ねこが", "ひなたで", "ねる。"],
+  ["しろい", "いぬが", "", "はしる。"],
+  ["ちいさい", "とりが", "", "うたう。"],
+  ["やさしい", "おかあさんが", "はやく", "おきる。"],
+  ["", "ぼくは", "げんきに", "あいさつする。"],
+  ["あかい", "はなが", "", "さく。"],
+  ["", "わたしは", "ほんを", "よむ。"],
+  ["", "せんせいが", "こくばんに", "かく。"],
+  ["おおきな", "きが", "", "ゆれる。"],
+  ["", "あめが", "しとしと", "ふる。"],
+  ["", "おとうとが", "ごはんを", "たべる。"],
+  ["かわいい", "こいぬが", "", "ねむる。"],
+  ["なかよしの", "ともだちが", "こうえんで", "あそぶ。"],
+  ["", "おじいさんが", "にわを", "そうじする。"],
+  ["たかい", "やまが", "", "みえる。"],
+  ["", "たろうさんが", "うみで", "およぐ。"],
+  ["あおい", "そらが", "", "ひろがる。"],
+  ["", "おねえさんが", "ピアノを", "ひく。"],
+  ["", "こどもたちが", "うたを", "うたう。"],
+  ["", "かぜが", "つよく", "ふく。"],
+  ["", "つきが", "きれいに", "かがやく。"],
+  ["この", "ほんは", "", "おもしろい。"],
+  ["あの", "はなは", "", "きれいだ。"],
+  ["", "おふろは", "", "あたたかい。"],
+  ["", "きょうしつは", "とても", "しずかだ。"],
+  ["", "ぼくは", "", "にねんせいです。"],
+  ["", "おかあさんは", "", "やさしい。"],
+  ["しろい", "うさぎが", "にんじんを", "たべる。"],
+  ["", "くまが", "もりで", "ねむる。"],
+  ["", "さかなが", "かわを", "およぐ。"],
+  ["", "ちょうちょうが", "はなに", "とまる。"],
+  ["", "かえるが", "いけに", "とびこむ。"],
+  ["おおきい", "ぞうが", "", "あるく。"],
+  ["", "はなこさんが", "えを", "かく。"],
+  ["", "おとうさんが", "くるまを", "うんてんする。"],
+  ["", "みんなが", "こうえんを", "はしる。"],
+  ["", "バスが", "えきに", "とまる。"],
+  ["おおきな", "ひこうきが", "そらを", "とぶ。"],
+  ["あたらしい", "ともだちが", "", "きた。"],
+  ["", "おばあさんが", "おやつを", "つくる。"],
+  ["", "せみが", "きで", "なく。"],
+  ["", "ゆきが", "まっしろに", "つもる。"],
+  ["つめたい", "みずが", "", "でる。"],
+  ["", "ぼくは", "てを", "あらう。"],
+  ["", "わたしたちは", "こえを", "あわせる。"],
+  ["", "いちごが", "", "あまい。"],
+  ["", "くつしたが", "", "あたたかい。"],
+  ["", "ゆうやけが", "とても", "きれいだ。"],
+  ["", "にいさんが", "やきゅうを", "する。"],
+  ["ちいさな", "こねこが", "ミルクを", "のむ。"]
+];
+const ROUND_SIZE = 5;
+
+/* ===== むずかしい 50 もん =====
+   "|" で ぶんせつを くぎる。S＝しゅご、P＝じゅつご、ほかは しゅうしょくご（3つ いじょう） */
+const HARD = [
+  "あかい|ちいさな|Sとりが|きのうえで|たのしそうに|Pうたう。",
+  "しろい|Sいぬが|にわを|げんきに|Pはしる。",
+  "やさしい|Sおかあさんが|あさ|はやく|ごはんを|Pつくる。",
+  "おおきな|Sきが|かぜで|ゆらゆら|Pゆれる。",
+  "ちいさい|Sおとうとが|おやつを|おいしそうに|Pたべる。",
+  "なかよしの|Sともだちが|こうえんで|いっしょに|Pあそぶ。",
+  "かわいい|くろい|Sこねこが|ひなたで|Pねる。",
+  "Sわたしは|きのう|ともだちと|こうえんで|Pあそんだ。",
+  "Sぼくは|まいあさ|にわで|ラジオたいそうを|Pする。",
+  "あたらしい|Sせんせいが|こくばんに|おおきく|じを|Pかく。",
+  "つめたい|Sかぜが|まどから|すうっと|Pはいる。",
+  "まっしろな|Sゆきが|やまに|しずかに|Pつもる。",
+  "ちいさな|Sありが|みちを|いっしょうけんめい|Pあるく。",
+  "おおきい|Sぞうが|どうぶつえんで|ゆっくり|Pあるく。",
+  "あかるい|Sつきが|そらで|きれいに|Pかがやく。",
+  "Sおじいさんが|まいにち|はなに|みずを|Pやる。",
+  "Sおばあさんが|あさ|だいどころで|おみそしるを|Pつくる。",
+  "げんきな|Sこどもたちが|グラウンドを|みんなで|Pはしる。",
+  "Sおねえさんが|へやで|しずかに|ピアノを|Pひく。",
+  "おおきな|Sひこうきが|そらを|たかく|Pとぶ。",
+  "ちいさな|Sかえるが|いけに|ぴょんと|Pとびこむ。",
+  "しろい|Sうさぎが|はたけで|にんじんを|むしゃむしゃ|Pたべる。",
+  "つよい|Sかぜが|ひるまから|ごうごうと|Pふく。",
+  "あかい|Sゆうやけが|きょうも|とても|Pきれいだ。",
+  "ぼくの|Sいもうとは|いつも|とても|Pげんきだ。",
+  "あたらしい|Sくつは|とても|ぼくに|Pにあう。",
+  "Sみんなは|きょう|きょうしつで|なかよく|Pべんきょうした。",
+  "かわいい|Sこいぬが|ソファで|ぐっすり|Pねむる。",
+  "おおきな|Sかめが|いけで|のんびり|Pおよぐ。",
+  "たのしい|Sえんそくが|あした|ぼくたちを|Pまっている。",
+  "Sたろうさんは|ともだちと|こうえんで|ボールを|Pなげる。",
+  "くろい|Sくもが|そらに|だんだん|Pふえる。",
+  "おいしい|Sいちごが|はたけで|たくさん|Pとれる。",
+  "Sおとうさんが|にちようびに|くるまで|ぼくを|Pつれていく。",
+  "しずかな|Sうみが|ゆうひで|あかく|Pそまる。",
+  "ちいさな|Sちょうちょうが|はなに|ふわりと|Pとまる。",
+  "あたたかい|Sおふろが|ぼくを|ぽかぽか|Pあたためる。",
+  "Sわたしは|あさ|ともだちに|げんきに|Pあいさつする。",
+  "やさしい|Sせんせいが|みんなに|えほんを|Pよむ。",
+  "おおきな|Sバスが|えきに|ゆっくり|Pとまる。",
+  "ながい|Sでんしゃが|えきを|ゴトゴト|Pでる。",
+  "つめたい|Sみずが|じゃぐちから|いきおいよく|Pでる。",
+  "まるい|Sつきが|やまから|ゆっくり|Pのぼる。",
+  "Sせみが|あさから|きで|うるさく|Pなく。",
+  "げんきな|Sひよこが|にわで|ピヨピヨと|Pなく。",
+  "Sおかあさんは|いつも|にこにこと|わたしを|Pまつ。",
+  "ふかふかの|Sふとんが|ぼくを|やさしく|Pつつむ。",
+  "すてきな|Sうたが|きょうしつに|きれいに|Pひびく。",
+  "かっこいい|Sおにいさんが|いつも|やさしく|わたしに|Pはなしかける。",
+  "おおきな|Sたいこが|うんどうかいで|どんどん|Pなる。"
+];
+function parseHard(s) {
+  return s.split("|").map((t) =>
+    t[0] === "S" ? { t: t.slice(1), r: "s" } : t[0] === "P" ? { t: t.slice(1), r: "p" } : { t: t, r: "m" });
+}
+let mode = "easy";
+const MODE_LABEL = { easy: "かんたん", hard: "むずかしい" };
+
+/* ===== 画面 ===== */
+const $ = (id) => document.getElementById(id);
+const screens = { start: $("start"), quiz: $("quiz"), result: $("result") };
+function show(name) {
+  for (const k in screens) screens[k].hidden = (k !== name);
+  window.scrollTo(0, 0);
+}
+
+/* ===== 音 ===== */
+let actx = null;
+function ac() {
+  if (!actx) {
+    try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; }
+  }
+  if (actx && actx.state === "suspended") { try { actx.resume(); } catch (e) {} }
+  return actx;
+}
+const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+function tone(m, t0, dur, type, vol) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.value = hz(m);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(vol, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function play(list, beat, type, vol) {
+  if (!ac()) return 0;
+  let t = actx.currentTime + 0.05;
+  for (const [m, b] of list) {
+    if (m) tone(m, t, b * beat * 1.1, type, vol);
+    t += b * beat;
+  }
+  return t;
+}
+function soundCorrect() {
+  play([[72, .5], [76, .5], [79, .5], [84, 1.6]], 0.15, "triangle", 0.28);
+}
+function soundWrong() {
+  play([[67, .7], [64, 1.4]], 0.2, "sine", 0.2);
+}
+function soundPerfect() {
+  if (!ac()) return;
+  const B = 0.22;
+  const lead = [
+    [72,1],[72,1],[72,1],[76,1.5],[72,.5],[76,1],[79,3],
+    [77,1],[77,1],[77,1],[81,1.5],[77,.5],[81,1],[84,3],
+    [79,1],[84,1],[88,1],[91,2],[88,.5],[91,.5],[96,4]
+  ];
+  play(lead, B, "triangle", 0.26);
+  // 和音（ひくい ところ）
+  const chords = [[48,[60,64,67],9],[53,[65,69,72],9],[55,[67,71,74],3],[48,[60,64,67],4]];
+  let t = actx.currentTime + 0.05;
+  for (const [bass, tri, beats] of chords) {
+    tone(bass, t, beats * B, "sine", 0.22);
+    for (const n of tri) tone(n, t, beats * B, "sine", 0.07);
+    t += beats * B;
+  }
+}
+
+/* ===== 花吹雪 ===== */
+const cv = $("petals"), cx = cv.getContext("2d");
+let petals = [], petalRAF = 0, petalEnd = 0;
+const PETAL_COLORS = ["#ffb7c9", "#ff94b0", "#ffd3de", "#ffffff", "#f7a2bd"];
+function sizeCanvas() {
+  const r = window.devicePixelRatio || 1;
+  cv.width = Math.floor(innerWidth * r); cv.height = Math.floor(innerHeight * r);
+  cx.setTransform(r, 0, 0, r, 0, 0);
+}
+function newPetal(initial) {
+  return {
+    x: Math.random() * innerWidth * 1.2 - innerWidth * 0.1,
+    y: initial ? -Math.random() * innerHeight : -20,
+    vx: 0.6 + Math.random() * 1.6, vy: 1.4 + Math.random() * 2.4,
+    r: 7 + Math.random() * 9, a: Math.random() * 6.28, va: (Math.random() - .5) * .12,
+    sw: Math.random() * 6.28, c: PETAL_COLORS[(Math.random() * PETAL_COLORS.length) | 0]
+  };
+}
+function startPetals() {
+  stopPetals();
+  sizeCanvas();
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  petals = Array.from({ length: calm ? 40 : 110 }, () => newPetal(true));
+  petalEnd = performance.now() + 9000;
+  const loop = (now) => {
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    const spawning = now < petalEnd - 3000;
+    for (const p of petals) {
+      p.sw += 0.04; p.x += p.vx + Math.sin(p.sw) * 1.2; p.y += p.vy; p.a += p.va;
+      if (p.y > innerHeight + 20 || p.x > innerWidth + 30) { if (spawning) Object.assign(p, newPetal(false)); else p.dead = true; }
+      if (p.dead) continue;
+      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.scale(1, 0.62 + 0.38 * Math.cos(p.sw));
+      cx.fillStyle = p.c; cx.beginPath();
+      cx.moveTo(0, -p.r); cx.bezierCurveTo(p.r, -p.r * .8, p.r, p.r * .7, 0, p.r);
+      cx.bezierCurveTo(-p.r, p.r * .7, -p.r, -p.r * .8, 0, -p.r); cx.fill();
+      cx.restore();
+    }
+    petals = petals.filter((p) => !p.dead);
+    if (now < petalEnd && petals.length) petalRAF = requestAnimationFrame(loop);
+    else { cx.clearRect(0, 0, innerWidth, innerHeight); petalRAF = 0; }
+  };
+  petalRAF = requestAnimationFrame(loop);
+}
+function stopPetals() {
+  if (petalRAF) cancelAnimationFrame(petalRAF);
+  petalRAF = 0; petals = [];
+  cx.clearRect(0, 0, innerWidth, innerHeight);
+}
+addEventListener("resize", () => { if (petalRAF) sizeCanvas(); });
+
+/* ===== クイズ ===== */
+let round = null;
+function shuffle(a) {
+  const b = a.slice();
+  for (let i = b.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [b[i], b[j]] = [b[j], b[i]]; }
+  return b;
+}
+function toChunks(q) {
+  const c = [];
+  if (q[0]) c.push({ t: q[0], r: "m" });
+  c.push({ t: q[1], r: "s" });
+  if (q[2]) c.push({ t: q[2], r: "m" });
+  c.push({ t: q[3], r: "p" });
+  return c;
+}
+function newRound() {
+  const pool = mode === "hard" ? HARD.map(parseHard) : BANK.map(toChunks);
+  round = { qs: shuffle(pool).slice(0, ROUND_SIZE), idx: 0, score: 0, res: [], stage: 0, ps: -1, pp: -1, done: false };
+  show("quiz");
+  drawQuestion();
+}
+function drawDots() {
+  const d = $("dots"); d.textContent = "";
+  for (let i = 0; i < ROUND_SIZE; i++) {
+    const e = document.createElement("span");
+    e.className = "dot" + (i < round.res.length ? (round.res[i] ? " ok" : " ng") : (i === round.idx ? " now" : ""));
+    d.appendChild(e);
+  }
+}
+function setInst() {
+  const el = $("inst");
+  if (round.stage === 0) { el.className = "inst s"; el.textContent = "しゅご（だれが・なにが）を えらぼう"; }
+  else { el.className = "inst p"; el.textContent = "じゅつご（どうする・どんなだ・なんだ）を えらぼう"; }
+}
+function tag(btn, text) {
+  let t = btn.querySelector(".tag");
+  if (!t) { t = document.createElement("span"); t.className = "tag"; btn.appendChild(t); }
+  t.textContent = text;
+}
+function drawQuestion() {
+  const q = round.qs[round.idx];
+  round.stage = 0; round.ps = -1; round.pp = -1; round.done = false;
+  $("qno").textContent = "もんだい " + (round.idx + 1) + " / " + ROUND_SIZE + "　（" + MODE_LABEL[mode] + "）";
+  $("fb").hidden = true;
+  $("inst").hidden = false;
+  const box = $("sentence"); box.textContent = "";
+  q.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chunk"; b.dataset.i = i;
+    b.appendChild(document.createTextNode(c.t));
+    b.addEventListener("click", () => pick(i));
+    box.appendChild(b);
+  });
+  drawDots(); setInst();
+  $("undo").disabled = true;
+  stopSpeech();
+}
+/* とりけし：さいしょから えらびなおし */
+function undoPicks() {
+  if (!round || round.done || round.stage === 0) return;
+  round.stage = 0; round.ps = -1; round.pp = -1;
+  [...$("sentence").children].forEach((b) => {
+    b.classList.remove("pick-s", "pick-p");
+    const t = b.querySelector(".tag"); if (t) t.remove();
+  });
+  setInst();
+  $("undo").disabled = true;
+}
+/* よみあげ */
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+function stopSpeech() {
+  if (canSpeak) { try { speechSynthesis.cancel(); } catch (e) {} }
+  $("speak").classList.remove("speaking");
+}
+function speak() {
+  if (!round || !canSpeak) return;
+  stopSpeech();
+  const text = round.qs[round.idx].map((c) => c.t).join("");
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ja-JP"; u.rate = 0.85;
+  const v = speechSynthesis.getVoices().find((x) => x.lang && x.lang.toLowerCase().replace("_", "-").startsWith("ja"));
+  if (v) u.voice = v;
+  u.onstart = () => $("speak").classList.add("speaking");
+  u.onend = u.onerror = () => $("speak").classList.remove("speaking");
+  try { speechSynthesis.speak(u); } catch (e) {}
+}
+function pick(i) {
+  if (round.done) return;
+  const q = round.qs[round.idx];
+  const btns = $("sentence").children;
+  if (round.stage === 0) {
+    round.ps = i; round.stage = 1;
+    btns[i].classList.add("pick-s"); tag(btns[i], "しゅご");
+    setInst();
+    $("undo").disabled = false;
+  } else {
+    if (i === round.ps) return;
+    round.pp = i;
+    btns[i].classList.add("pick-p"); tag(btns[i], "じゅつご");
+    judge(q, btns);
+  }
+}
+function judge(q, btns) {
+  round.done = true;
+  $("undo").disabled = true;
+  const okS = q[round.ps].r === "s", okP = q[round.pp].r === "p";
+  const ok = okS && okP;
+  round.res.push(ok); if (ok) round.score++;
+  const sIdx = q.findIndex((c) => c.r === "s"), pIdx = q.findIndex((c) => c.r === "p");
+  [...btns].forEach((b) => { b.disabled = true; });
+  [...btns].forEach((b) => b.classList.remove("pick-s", "pick-p"));
+  // まちがえて えらんだ ぶんせつ
+  if (!okS) { btns[round.ps].classList.add("wrong"); tag(btns[round.ps], "ちがうよ"); }
+  if (!okP) { btns[round.pp].classList.add("wrong"); tag(btns[round.pp], "ちがうよ"); }
+  // こたえ：しゅごは あお、じゅつごは あか
+  btns[sIdx].classList.remove("wrong"); btns[sIdx].classList.add("show-s"); tag(btns[sIdx], "しゅご");
+  btns[pIdx].classList.remove("wrong"); btns[pIdx].classList.add("show-p"); tag(btns[pIdx], "じゅつご");
+  $("inst").hidden = true;
+  const fb = $("fb"); fb.hidden = false;
+  fb.className = "fb " + (ok ? "ok" : "ng");
+  $("fbTitle").textContent = ok ? "せいかい！" : "もうちょっと";
+  const det = $("fbDetail"); det.textContent = "";
+  if (!ok) {
+    det.append("こたえ　", spanB("s", "しゅご：" + q[sIdx].t), "　", spanB("p", "じゅつご：" + q[pIdx].t));
+  } else {
+    det.append(spanB("s", "しゅご：" + q[sIdx].t), "　", spanB("p", "じゅつご：" + q[pIdx].t));
+  }
+  $("next").textContent = round.idx === ROUND_SIZE - 1 ? "けっかを みる" : "つぎへ";
+  drawDots();
+  if (ok) soundCorrect(); else soundWrong();
+  $("next").focus({ preventScroll: true });
+}
+function spanB(cls, text) {
+  const s = document.createElement("b"); s.className = cls; s.textContent = text; return s;
+}
+function nextQ() {
+  if (round.idx < ROUND_SIZE - 1) { round.idx++; drawQuestion(); }
+  else showResult();
+}
+function showResult() {
+  stopSpeech();
+  show("result");
+  const n = round.score;
+  const all = n === ROUND_SIZE;
+  $("perfect").hidden = !all;
+  $("score").textContent = "";
+  $("score").append(ROUND_SIZE + "もん中 ", Object.assign(document.createElement("em"), { textContent: n }), " もん せいかい");
+  $("msg").textContent = all ? "しゅごと じゅつごの めいじんだね！"
+    : n >= 3 ? "すごい！ もういちど やってみよう。"
+    : "だいじょうぶ！ もういちど ちょうせんしよう。";
+  if (all) { startPetals(); soundPerfect(); }
+}
+
+/* ===== ボタン ===== */
+const SUB_TEXT = { easy: "５もん ちょうせん", hard: "かざりの ことばが ふえるよ　５もん" };
+document.querySelectorAll(".mode-btn").forEach((b) => {
+  b.addEventListener("click", () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll(".mode-btn").forEach((x) => {
+      const on = x === b;
+      x.classList.toggle("on", on);
+      x.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    $("sub").textContent = SUB_TEXT[mode];
+  });
+});
+$("go").addEventListener("click", () => { ac(); newRound(); });
+$("next").addEventListener("click", nextQ);
+$("undo").addEventListener("click", undoPicks);
+$("speak").addEventListener("click", speak);
+if (!canSpeak) $("speak").disabled = true;
+else { try { speechSynthesis.getVoices(); } catch (e) {} }
+$("again").addEventListener("click", () => { stopPetals(); ac(); newRound(); });
+$("home").addEventListener("click", () => { stopPetals(); show("start"); });
+$("fs").addEventListener("click", () => {
+  try {
+    if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
+    else {
+      const el = document.documentElement;
+      const p = el.requestFullscreen ? el.requestFullscreen() : (el.webkitRequestFullscreen ? el.webkitRequestFullscreen() : null);
+      if (p && p.catch) p.catch(() => {});
+    }
+  } catch (e) {}
+});
+</script>
+
+</body></html>
