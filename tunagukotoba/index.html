@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>つなぐ言葉</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff7e6;--card:#fff;--ink:#3a2e24;--sub:#7a6a5a;--main:#e8590c;--main2:#fcc419;--ok:#2f9e44;--ng:#d6336c;--line:#f0d9b5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2118;--card:#3a2e24;--ink:#fff3e0;--sub:#d8c3a5;--line:#5a4733}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;font-weight:700;overflow-x:hidden}
+#app{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;position:relative}
+.screen{display:none;width:100%;max-width:760px;text-align:center}
+.screen.on{display:block}
+h1{font-size:clamp(34px,8vw,64px);margin:0 0 8px;color:var(--main);font-weight:900;letter-spacing:.05em}
+.sub{color:var(--sub);margin:0 0 28px;font-size:clamp(16px,3vw,22px)}
+.btn{font:inherit;border:0;border-radius:20px;padding:16px 28px;font-size:clamp(20px,4vw,28px);cursor:pointer;color:#fff;background:var(--main);box-shadow:0 6px 0 #a63d08;margin:8px;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #a63d08}
+.btn.b2{background:#1c7ed6;box-shadow:0 6px 0 #0b4f94}
+.btn.b2:active{box-shadow:0 2px 0 #0b4f94}
+.btn.gray{background:#868e96;box-shadow:0 6px 0 #495057}
+.lv small{display:block;font-size:.55em;font-weight:500;opacity:.9}
+#fs{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;z-index:5;font:inherit;font-size:16px;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
+#credit{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;text-align:center;color:var(--sub);font-size:clamp(16px,3vw,20px);pointer-events:none}
+.card{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:22px 18px;margin:12px 0}
+.prog{color:var(--sub);font-size:20px}
+.q{font-size:clamp(22px,4.6vw,32px);line-height:1.9;text-align:left}
+.q .gap{display:inline-block;min-width:3.2em;border-bottom:4px solid var(--main);text-align:center;color:var(--main)}
+.q .line2{display:block}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ch{font:inherit;font-size:clamp(20px,4.4vw,30px);padding:16px 8px;border-radius:18px;border:3px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;box-shadow:0 5px 0 var(--line)}
+.ch:active{transform:translateY(3px)}
+.ch.bad{background:var(--ng);color:#fff;border-color:var(--ng);opacity:.55;pointer-events:none}
+.ch.good{background:var(--ok);color:#fff;border-color:var(--ok)}
+#fb{min-height:52px;font-size:clamp(24px,5vw,36px);font-weight:900;margin:6px 0}
+.fb-ok{color:var(--ok)}.fb-ng{color:var(--ng)}
+.score{font-size:clamp(28px,6vw,44px);margin:12px 0}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:20}
+</style>
+</head>
+<body>
+<button id="fs">⛶ 全画面</button>
+<canvas id="fx"></canvas>
+<div id="app">
+  <section class="screen on" id="s-start">
+    <h1>つなぐ言葉</h1>
+    <p class="sub">小学４年生 国語</p>
+    <button class="btn lv" data-lv="easy">かんたん<small>２つの文を つなぐ</small></button>
+    <button class="btn b2 lv" data-lv="hard">むずかしい<small>１つの文の つなぐ言葉</small></button>
+  </section>
+  <section class="screen" id="s-quiz">
+    <div class="prog" id="prog"></div>
+    <div class="card"><div class="q" id="q"></div></div>
+    <div id="fb"></div>
+    <div class="choices" id="choices"></div>
+    <button class="btn" id="next" style="display:none">つぎへ ▶</button>
+  </section>
+  <section class="screen" id="s-end">
+    <h1 id="endT"></h1>
+    <div class="score" id="endS"></div>
+    <button class="btn" id="again">もういちど</button>
+    <button class="btn gray" id="home">さいしょへ</button>
+  </section>
+</div>
+<div id="credit">きだっち＠明倫小</div>
+<script>
+const EASY0=[
+["朝からずっと雨がふっていた。","遠足は中止になった。","だから",["だから","しかし","または","ところで"]],
+["毎日いっしょうけんめい練習した。","試合には負けてしまった。","しかし",["しかし","だから","つまり","さらに"]],
+["休み時間は校庭で遊ぼうか。","図書室で本を読もうか。","それとも",["それとも","だから","なぜなら","ところが"]],
+["わたしは夏がすきだ。","プールで泳げるからだ。","なぜなら",["なぜなら","しかし","そこで","または"]],
+["大きな声であいさつをしましょう。","えがおでするともっといいですね。","さらに",["さらに","しかし","または","ところで"]],
+["すきな果物はたくさんある。","りんごやみかんなどだ。","たとえば",["たとえば","しかし","だから","または"]],
+["宿題が終わった。","あしたの持ち物は何だったかな。","ところで",["ところで","だから","なぜなら","しかし"]],
+["道にまよってしまった。","交番で道を教えてもらった。","そこで",["そこで","しかし","または","なぜなら"]],
+["外は雪がふっている。","風もとても強い。","それに",["それに","しかし","だから","または"]],
+["ぼくの弟は六才だ。","小学一年生の年れいだ。","つまり",["つまり","しかし","ところが","または"]],
+["さいふを見つけたので交番にとどけた。","おまわりさんにとてもほめられた。","そこで",["そこで","しかし","または","ところで"].filter(x=>x!="そこで").concat("さて")].slice(0,0)
+].filter(x=>x.length);
+EASY0.push(["家を出たときは晴れていた。","学校に着くころには雨がふってきた。","ところが",["ところが","だから","つまり","または"]]);
+const HARD0=[
+["雨がふっている（　）、遠足は中止になった。","ので",["ので","のに","けれど","ながら"]],
+["一生けんめい練習した（　）、勝てなかった。","のに",["のに","ので","ば","し"]],
+["音楽を聞き（　）、宿題をする。","ながら",["ながら","ので","のに","ば"]],
+["春になる（　）、さくらがさく。","と",["と","のに","けれど","ながら"]],
+["早く起きれ（　）、朝ごはんをゆっくり食べられる。","ば",["ば","のに","ながら","けれど"]],
+["算数はすきだ（　）、国語はにが手だ。","が",["が","ので","と","ながら"]],
+["公園に行っ（　）、友だちがいた。","たら",["たら","のに","ので","ながら"]],
+["かぜをひいた（　）、学校を休んだ。","ため",["ため","のに","ながら","けれど"]],
+["この店はねだんが安い（　）、味もおいしい。","し",["し","のに","ば","ながら"]],
+["このゲームは楽しい（　）、目がつかれる。","反面",["反面","ので","と","ば"]],
+["いそいでいた（　）、ちこくしてしまった。","のに",["のに","ので","し","ば"]]
+];
+const EASY=[
+["朝から雨がふっていた。","運動会はえんきになった。","だから","しかし","または","ところで"],
+["かさを持って出かけた。","雨はぜんぜんふらなかった。","ところが","だから","または","たとえば"],
+["この花は水が大すきだ。","毎日、水をやらなければならない。","したがって","しかし","または","ところで"],
+["かぜをひいてねつが出た。","病院で見てもらった。","そこで","しかし","または","なぜなら"],
+["ぼくは走るのがとくいだ。","泳ぐのはにが手だ。","でも","だから","つまり","そこで"],
+["この本はおもしろい。","ねだんが高い。","けれども","だから","または","さらに"],
+["ぼくは毎朝ジョギングをしている。","夜はストレッチもしている。","また","しかし","だから","なぜなら"],
+["この店のカレーはおいしい。","ねだんも安い。","さらに","しかし","または","ところで"],
+["今日はとても寒い。","風も強くふいている。","それに","しかし","または","つまり"],
+["お茶にしますか。","ジュースにしますか。","それとも","だから","しかし","なぜなら"],
+["えん筆で書いてもよい。","ボールペンで書いてもよい。","または","だから","しかし","ところで"],
+["兄は外で野球をしている。","弟は家でゲームをしている。","いっぽうで","だから","または","なぜなら"],
+["ぼくはしかられた。","宿題をわすれたからだ。","なぜなら","だから","しかし","または"],
+["わたしの姉は十二才だ。","中学一年生の年れいだ。","つまり","しかし","または","ところが"],
+["すきなくだものはたくさんある。","いちごやぶどうなどだ。","たとえば","しかし","だから","または"],
+["公園に行ってみた。","だれもいなかった。","ところが","だから","または","たとえば"],
+["宿題が終わった。","あしたの持ち物は何だったかな。","ところで","だから","しかし","なぜなら"],
+["これで話は終わりです。","次のしつもんに答えましょう。","さて","しかし","または","なぜなら"],
+["道がこんでいた。","電車で行くことにした。","そこで","しかし","または","たとえば"],
+["日曜日は雨だった。","家で本を読んですごした。","だから","しかし","または","ところで"],
+["先生にほめられた。","とてもうれしかった。","だから","しかし","または","ところで"],
+["弟はなきむしだ。","今日はなかなかった。","しかし","だから","または","なぜなら"],
+["勉強はたいへんだ。","やりがいがある。","けれども","だから","または","つまり"],
+["ノートを買った。","けしゴムも買った。","また","しかし","だから","ところが"],
+["となりの町はにぎやかだ。","大きな公園もある。","さらに","しかし","または","なぜなら"],
+["十時にやくそくをした。","友だちは来なかった。","しかし","だから","または","たとえば"],
+["一生けんめい走った。","バスに間に合わなかった。","けれども","だから","または","さらに"],
+["遠足は動物園がいいかな。","すいぞくかんがいいかな。","それとも","しかし","だから","つまり"],
+["夏休みは行事がたくさんある。","花火大会やおまつりなどだ。","たとえば","しかし","または","だから"],
+["クラスで話し合った。","リレーの走る人を決めた。","そこで","しかし","または","なぜなら"]
+,
+["ぼくはねむかった。","宿題をがんばってやった。","でも","だから","または","つまり"],
+["三角形は三つのへんでできている。","へんが四つあれば三角形ではない。","したがって","しかし","または","ところで"],
+["ゆうべは早くねた。","今朝はすっきり目がさめた。","だから","しかし","または","ところで"],
+["かれは足が速い。","長きょりはにが手だ。","しかし","だから","または","つまり"],
+["図書館で本を借りた。","調べたいことをノートにまとめた。","さらに","しかし","または","なぜなら"],
+["この道は人が多い。","車もたくさん通る。","それに","しかし","または","つまり"],
+["きっぷは駅で買えます。","アプリでも買えます。","または","だから","しかし","なぜなら"],
+["ごはんにしようか。","パンにしようか。","それとも","だから","しかし","ところが"],
+["都会は店が多くてべんりだ。","人が多くてさわがしい。","いっぽうで","だから","または","なぜなら"],
+["ぼくは図書委員になりたい。","本を読むのが大すきだからだ。","なぜなら","だから","しかし","または"],
+["ゴールまであと十メートルだ。","もうすぐ着くということだ。","つまり","しかし","または","ところが"],
+["いろいろな生き物が海にすんでいる。","イルカやクジラなどだ。","たとえば","しかし","だから","または"],
+["ぼくは勝てると思っていた。","さいしょのゲームで負けてしまった。","ところが","だから","または","たとえば"],
+["きれいな花がさいたね。","今日の夕ごはんは何かな。","ところで","だから","しかし","なぜなら"],
+["ここまでで用意はできました。","いよいよ本番にうつりましょう。","さて","しかし","または","なぜなら"],
+["かぎをなくしてしまった。","先生にそうだんした。","そこで","しかし","または","たとえば"],
+["ゆめはかんたんにはかなわない。","あきらめずにつづけたい。","けれども","だから","または","つまり"],
+["雨がふってきた。","ゲームはつづけられた。","でも","だから","または","なぜなら"],
+["あしたは遠足がある。","来週はテストがある。","また","しかし","だから","ところが"],
+["この水は飲めない。","使う前にわかさなければならない。","したがって","しかし","または","ところで"]
+].map(a=>[a[0],a[1],a[2],a.slice(2)]);
+const HARD=[
+["雨がふっている（　）、かさをさして行く。","ので","のに","たり","ば"],
+["バスが来ない（　）、歩いて行った。","ので","のに","ながら","たり"],
+["ねだんが高い（　）、買わなかった。","ので","のに","ながら","たり"],
+["夜ふかしをした（　）、ねむい。","から","のに","ながら","ば"],
+["手をあらった（　）、ごはんを食べよう。","から","のに","が","ながら"],
+["大切なものだ（　）、なくさないでね。","から","のに","が","ながら"],
+["ねぼうをした（　）、学校におくれた。","ため","のに","ながら","たり"],
+["宿題をわすれた（　）、先生にしかられた。","ため","のに","ながら","ば"],
+["かぜをひかない（　）、手あらいをする。","ため","のに","たら","し"],
+["ぼくは歌がすきだ（　）、うまくない。","が","ので","ため","ながら"],
+["算数はすきだ（　）、国語はにが手だ。","が","ので","ため","ながら"],
+["兄は野球をしている（　）、わたしはピアノをひいている。","が","ので","ため","ながら"],
+["風が強い（　）、さむくはない。","けれど","ので","ため","から"],
+["この本はむずかしい（　）、おもしろい。","けれど","ので","ため","から"],
+["走った（　）、間に合わなかった。","のに","ので","ながら","ば"],
+["いくら練習した（　）、上手にならない。","のに","ので","から","ため"],
+["兄は元気だ（　）、弟は体が弱い。","いっぽうで","ので","ため","ながら"],
+["ドアを開ける（　）、犬がとびこんできた。","と","のに","ながら","たり"],
+["ぼくが家を出た（　）、雨がふり出した。","とき","のに","ながら","ば"],
+["早くねれ（　）、朝おきられる。","ば","のに","ながら","たり"],
+["よく考えれ（　）、答えがわかるはずだ。","ば","のに","ながら","たり"],
+["家に帰っ（　）、おやつを食べよう。","たら","のに","ながら","ので"],
+["先生に聞い（　）、すぐわかった。","たら","のに","ながら","ため"],
+["行きたい（　）、いっしょに行こう。","なら","のに","ながら","ため"],
+["天気がよい（　）、ピクニックに行こう。","なら","のに","ながら","ため"],
+["この店は安い（　）、おいしい。","し","のに","ながら","ば"],
+["このゲームは楽しい（　）、目がつかれる。","反面","ので","ながら","たら"],
+["ふくをきがえ（　）、外に出た。","て","のに","ば","が"],
+["歩き（　）スマホを見てはいけない。","ながら","ので","ば","のに"],
+["妹はやさしい（　）、かしこい。","し","のに","ながら","ば"]
+,
+["道をわたる（　）、右と左をよく見る。","とき","のに","ので","ながら"],
+["さびしい（　）、音楽を聞く。","とき","のに","が","ながら"],
+["ねつがある（　）、今日は休む。","ので","のに","が","たり"],
+["お客さんが来る（　）、そうじをしよう。","から","のに","が","ながら"],
+["大雪の（　）、電車がおくれた。","ため","のに","ながら","たり"],
+["小さい（　）、力は強い。","が","ので","ため","ながら"],
+["ねむい（　）、がんばって起きている。","けれど","ので","ため","から"],
+["ごちそうを作った（　）、だれも食べなかった。","のに","ので","ため","ながら"],
+["ボタンをおす（　）、ドアが開く。","と","のに","ながら","けれど"],
+["ふたを開ける（　）、いいにおいがした。","と","のに","ながら","たり"],
+["ゆっくり行け（　）、つかれない。","ば","のに","ながら","けれど"],
+["あきらめなけれ（　）、きっとできる。","ば","のに","ながら","し"],
+["大人になっ（　）、船長になりたい。","たら","のに","ながら","ため"],
+["ひまな（　）、手つだってよ。","なら","のに","ながら","たり"],
+["雨もふっている（　）、今日はやめておこう。","し","のに","ながら","ば"],
+["この犬は元気だ（　）、かわいい。","し","のに","ながら","ば"],
+["ごはんを食べ（　）、はをみがく。","て","のに","が","ば"],
+["ラジオを聞き（　）、そうじをする。","ながら","のに","ので","と"],
+["夏は海が楽しい（　）、冬はスキーが楽しい。","いっぽうで","ので","ため","ながら"],
+["ねこは自由だ（　）、さびしがりやでもある。","反面","ので","ながら","たら"]
+].map(a=>[a[0],a[1],a.slice(1)]);
+const $=id=>document.getElementById(id);
+const show=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let AC;
+function tone(freq,t0,dur,type='triangle',vol=.25){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=freq;
+  const t=AC.currentTime+t0;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g).connect(AC.destination);o.start(t);o.stop(t+dur+.05)}catch(e){}
+}
+const N={C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,C5:523,D5:587,E5:659,F5:698,G5:784,A5:880,C6:1047};
+function okSound(){[["C5",0],["E5",.12],["G5",.24],["C6",.36]].forEach(([n,t])=>tone(N[n],t,.3))}
+function ngSound(){tone(200,0,.25,'sawtooth',.12)}
+function bigSound(){
+  const m=[["C5",0,.2],["E5",.2,.2],["G5",.4,.2],["C6",.6,.4],["G5",1.1,.2],["A5",1.3,.2],["C6",1.5,.2],["E5",1.8,.2],["G5",2.0,.2],["C6",2.2,.2],["D5",2.6,.2],["G5",2.8,.2],["C6",3.0,.8]];
+  m.forEach(([n,t,d])=>{tone(N[n],t,d+.2,'triangle',.28);tone(N[n]/2,t,d+.2,'sine',.15)});
+}
+let mode,qs,idx,miss,missedNow;
+function start(lv){
+  mode=lv;
+  const pool=lv==='easy'?EASY:HARD;
+  qs=shuffle(pool).slice(0,5);idx=0;miss=0;
+  show('s-quiz');render();
+}
+function render(){
+  missedNow=false;
+  $('next').style.display='none';$('fb').textContent='';$('fb').className='';
+  $('prog').textContent=(mode==='easy'?'かんたん':'むずかしい')+'　'+(idx+1)+' / 5 もんめ';
+  const q=qs[idx];let ans,ch;
+  if(mode==='easy'){
+    $('q').innerHTML=`<span>${q[0]}</span><span class="line2"><span class="gap" id="gap">？</span>、${q[1]}</span>`;
+    ans=q[2];ch=q[3];
+  }else{
+    $('q').innerHTML=q[0].replace('（　）','<span class="gap" id="gap">？</span>');
+    ans=q[1];ch=q[2];
+  }
+  const box=$('choices');box.innerHTML='';
+  shuffle(ch).forEach(c=>{
+    const b=document.createElement('button');b.className='ch';b.textContent=c;
+    b.onclick=()=>pick(b,c,ans);box.appendChild(b);
+  });
+}
+function pick(b,c,ans){
+  if(c===ans){
+    b.classList.add('good');$('gap').textContent=c;
+    $('fb').textContent='⭕ せいかい！';$('fb').className='fb-ok';
+    document.querySelectorAll('.ch').forEach(x=>x.style.pointerEvents='none');
+    okSound();
+    $('next').textContent=idx===4?'けっかを見る ▶':'つぎへ ▶';$('next').style.display='inline-block';
+  }else{
+    b.classList.add('bad');
+    if(!missedNow){missedNow=true;miss++}
+    $('fb').textContent='もうちょっと';$('fb').className='fb-ng';
+    ngSound();
+  }
+}
+$('next').onclick=()=>{if(idx===4)finish();else{idx++;render()}};
+function finish(){
+  show('s-end');
+  const score=5-miss;
+  if(miss===0){
+    $('endT').textContent='🌸 ぜんもんせいかい！ 🌸';
+    $('endS').textContent='5もん ぜんぶ せいかい！すごい！';
+    bigSound();petals(true);
+  }else{
+    $('endT').textContent='おつかれさま！';
+    $('endS').textContent=`1回で正かいできたのは ${Math.max(0,5-miss)} もん / 5もん`;
+    okSound();
+  }
+}
+$('again').onclick=()=>start(mode);
+$('home').onclick=()=>show('s-start');
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}start(b.dataset.lv)});
+$('fs').onclick=()=>{
+  try{
+    if(document.fullscreenElement)document.exitFullscreen();
+    else (document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen).call(document.documentElement);
+  }catch(e){}
+};
+/* 花吹雪 */
+const cv=$('fx'),cx=cv.getContext('2d');let P=[],running=false;
+function sz(){cv.width=innerWidth;cv.height=innerHeight}addEventListener('resize',sz);sz();
+function petals(){
+  P=[];for(let i=0;i<160;i++)P.push({x:Math.random()*cv.width,y:-Math.random()*cv.height,r:6+Math.random()*10,vx:-1+Math.random()*3,vy:1.5+Math.random()*3,a:Math.random()*6,va:(Math.random()-.5)*.1,c:['#ffb3c7','#ff8fab','#ffd6e0','#fff0f3'][Math.random()*4|0]});
+  if(!running){running=true;loop()}
+  setTimeout(()=>{P.forEach(p=>p.last=true)},9000);
+}
+function loop(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  P.forEach(p=>{
+    p.x+=p.vx+Math.sin(p.a)*1.5;p.y+=p.vy;p.a+=p.va+.03;
+    if(p.y>cv.height+20){if(p.last){p.dead=true}else{p.y=-20;p.x=Math.random()*cv.width}}
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.a);cx.fillStyle=p.c;
+    cx.beginPath();cx.ellipse(0,0,p.r,p.r*.6,0,0,6.3);cx.fill();cx.restore();
+  });
+  P=P.filter(p=>!p.dead);
+  if(P.length)requestAnimationFrame(loop);else{running=false;cx.clearRect(0,0,cv.width,cv.height)}
+}
+</script>
+</body>
+</html>
