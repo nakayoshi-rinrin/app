@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>おかねのべんきょう</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff8e7;--fg:#3b2f1e;--card:#fff;--ac:#ff8a3d;--ok:#2fae66;--ng:#e5484d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1a12;--fg:#f5ecd9;--card:#2c251a}}
+:root[data-theme="dark"]{--bg:#1f1a12;--fg:#f5ecd9;--card:#2c251a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:520px;height:100%;display:flex;flex-direction:column;padding:12px 14px;text-align:center}
+.screen{display:none;flex:1;flex-direction:column;min-height:0}
+.screen.on{display:flex}
+h1{font-size:2rem;margin:8vh 0 6px}
+.sub{opacity:.7;margin-bottom:24px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:18px;padding:16px;font-size:1.4rem;color:#fff;background:var(--ac);box-shadow:0 5px 0 rgba(0,0,0,.2);cursor:pointer;margin:8px 0}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.b1{background:#3aa76d}.b2{background:#3a86e0}.b3{background:#c65bd6}
+.btn small{display:block;font-size:.85rem;font-weight:400;opacity:.9}
+#q{font-size:2rem;font-weight:800;margin:4px 0}
+#prog{font-size:1rem;opacity:.7}
+#field{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:8px;padding:8px;overflow:auto}
+.coin{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;position:relative;box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),inset 0 -4px 6px rgba(0,0,0,.18),0 3px 4px rgba(0,0,0,.3);color:rgba(0,0,0,.6)}
+.coin.hole::after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:var(--bg);box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+.coin span{position:relative;top:-1px}
+.coin.hole span{top:-26%;font-size:.8em}
+#msg{height:2.4rem;font-size:1.6rem;font-weight:800}
+#pick{display:flex;justify-content:center;gap:10px;align-items:flex-end;margin-bottom:6px}
+.col{width:90px}
+.col label{font-size:.9rem;opacity:.8}
+.wheel{height:150px;overflow-y:scroll;scroll-snap-type:y mandatory;background:var(--card);border-radius:14px;padding:50px 0;border:3px solid var(--ac);scrollbar-width:none}
+.wheel::-webkit-scrollbar{display:none}
+.wb{position:relative}
+.wb::after{content:"";position:absolute;left:0;right:0;top:53px;height:50px;background:rgba(255,138,61,.22);pointer-events:none;border-radius:6px}
+.wb::before{content:"▶";position:absolute;left:-16px;top:63px;color:var(--ac);font-size:1rem;z-index:2}
+.wheel div{height:50px;line-height:50px;font-size:1.5rem;font-weight:700;scroll-snap-align:center;opacity:.3;transition:font-size .1s}
+.wheel div.sel{opacity:1;font-size:2.6rem;font-weight:800;color:var(--ac)}
+#now{font-size:1.1rem;margin-bottom:6px}#now b{font-size:1.6rem;color:var(--ac)}
+#ans{font-size:2.6rem;font-weight:800;background:var(--card);border:3px solid var(--ac);border-radius:14px;height:64px;line-height:58px;margin:0 auto 8px;width:70%}
+#pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:6px}
+#pad .btn{padding:12px 0;margin:0;font-size:1.6rem;background:#3a86e0}
+#pad .btn.x{background:#999;font-size:1.1rem}
+#go{width:100%}
+.big{font-size:1.9rem;font-weight:800;margin:14vh 0 20px;line-height:1.5}
+#fs{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);left:12px;width:44px;height:44px;border:0;border-radius:12px;background:var(--card);color:var(--fg);font-size:1.6rem;box-shadow:0 2px 4px rgba(0,0,0,.25);cursor:pointer;z-index:5}
+#credit{margin-top:auto;padding:12px 0;font-size:1rem;opacity:.7}
+.row{display:flex;gap:12px;justify-content:center}
+.row .btn{flex:1;max-width:200px}
+</style></head><body><div id="app">
+
+<div id="top" class="screen on">
+ <button id="fs" onclick="toggleFS()" aria-label="ぜんがめん" title="ぜんがめん">⛶</button>
+ <h1>🪙 おかね 🪙</h1><div class="sub">こいんを かぞえよう！</div>
+ <button class="btn b1" onclick="start('easy')">かんたん<small>1円・10円・100円</small></button>
+ <button class="btn b2" onclick="start('normal')">ふつう<small>6しゅるいの こいん／えらんで こたえる</small></button>
+ <button class="btn b3" onclick="start('hard')">むずかしい<small>6しゅるいの こいん／すうじで こたえる</small></button>
+ <div id="credit">きだっち＠明倫小</div>
+</div>
+
+<div id="play" class="screen">
+ <div id="prog"></div><div id="q">いくらか？</div>
+ <div id="field"></div>
+ <div id="msg"></div>
+ <div id="now">いまの こたえ：<b id="nowv">0</b> 円</div>
+ <div id="pick">
+  <div class="col"><label>ひゃく</label><div class="wb"><div class="wheel" id="w0"></div></div></div>
+  <div class="col"><label>じゅう</label><div class="wb"><div class="wheel" id="w1"></div></div></div>
+  <div class="col"><label>いち</label><div class="wb"><div class="wheel" id="w2"></div></div></div>
+  <div style="font-size:1.8rem;font-weight:800;padding-bottom:60px">円</div>
+ </div>
+ <div id="keys" style="display:none">
+  <div id="ans"></div><div id="pad"></div>
+ </div>
+ <button class="btn b1" id="go" onclick="check()">こたえる</button>
+</div>
+
+<div id="clear" class="screen">
+ <div class="big">🎉<br>おめでとう！<br>つぎもがんばろうね！</div>
+ <div class="row"><button class="btn b2" onclick="show('top')">🔁<small>もういちど</small></button>
+ <button class="btn" style="background:#888" onclick="bye()">👋<small>おわる</small></button></div>
+</div>
+
+<div id="end" class="screen"><div class="big">またね！<br>👋</div><button class="btn b2" onclick="show('top')">もどる</button></div>
+</div>
+<script>
+const COINS={1:{d:20,c:"#c9ccd1"},5:{d:22,c:"#e0b84a",h:1},10:{d:23.5,c:"#c9773f"},50:{d:21,c:"#d3d6db",h:1},100:{d:22.6,c:"#d9dce1"},500:{d:26.5,c:"#e6d38a"}};
+const SETS={easy:[1,10,100],normal:[1,5,10,50,100,500],hard:[1,5,10,50,100,500]};
+let mode,n,ans,typed="",busy=false,AC;
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function toggleFS(){const d=document,e=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const f=e.requestFullscreen||e.webkitRequestFullscreen;if(f)f.call(e);else alert("このブラウザでは ぜんがめんに できません")}}catch(x){}}
+function bye(){show('end')}
+// sound
+function tone(f,t,d,type="triangle"){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const s=AC.currentTime+t;g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.25,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.05)}catch(e){}}
+function melody(a,step=.16){a.forEach((f,i)=>tone(f,i*step,step*1.6))}
+const C=n=>523.25*Math.pow(2,n/12);
+const okSnd=()=>melody([C(0),C(4),C(7),C(12)],.12);
+const clearSnd=()=>melody([C(0),C(4),C(7),C(12),C(7),C(12),C(16),C(19),C(16),C(24)],.17);
+const ngSnd=()=>{tone(300,0,.2,"sine");tone(240,.2,.3,"sine")};
+// build wheels & pad
+for(let w=0;w<3;w++){let h="";for(let i=0;i<10;i++)h+=`<div>${i}</div>`;const el=$('w'+w);el.innerHTML=h;el.addEventListener('scroll',refresh)}
+function refresh(){for(let w=0;w<3;w++){const el=$('w'+w),i=Math.max(0,Math.min(9,Math.round(el.scrollTop/50)));[...el.children].forEach((c,k)=>c.classList.toggle('sel',k===i))}$('nowv').textContent=val()}
+let ph="";for(let i=1;i<=9;i++)ph+=`<button class="btn" onclick="key(${i})">${i}</button>`;
+ph+=`<button class="btn" onclick="key(0)">0</button><button class="btn x" onclick="typed='';upd()">ぜんぶけす</button><button class="btn x" onclick="typed=typed.slice(0,-1);upd()">1もじけす</button>`;
+$('pad').innerHTML=ph;
+function key(d){if(typed.length<4){typed+=d;upd()}}
+function upd(){$('ans').textContent=typed?typed+"円":""}
+function start(m){mode=m;n=0;$('keys').style.display=m==='hard'?'block':'none';$('pick').style.display=m==='hard'?'none':'flex';$('now').style.display=m==='hard'?'none':'block';show('play');next()}
+function gen(){const set=SETS[mode];let list,sum;do{list=[];sum=0;const cnt=3+Math.floor(Math.random()*9);for(let i=0;i<cnt;i++){const v=set[Math.floor(Math.random()*set.length)];if(sum+v<=1000){list.push(v);sum+=v}}}while(sum===0);
+ for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}return{list,sum}}
+function next(){if(n>=5){show('clear');clearSnd();return}
+ const q=gen();ans=q.sum;n++;busy=false;typed="";upd();$('msg').textContent="";$('prog').textContent=`${n} / 5 もんめ`;
+ $('field').innerHTML=q.list.map(v=>{const c=COINS[v],s=c.d*2.7;return`<div class="coin${c.h?' hole':''}" style="width:${s}px;height:${s}px;background:radial-gradient(circle at 35% 30%,#fff8,${c.c} 55%);font-size:${s*.3}px;transform:rotate(${Math.random()*40-20}deg)"><span>${v}</span></div>`}).join("");
+ for(let w=0;w<3;w++)$('w'+w).scrollTop=0;refresh()}
+function val(){if(mode==='hard')return typed===""?-1:parseInt(typed,10);
+ return[0,1,2].reduce((a,w)=>a*10+Math.round($('w'+w).scrollTop/50),0)}
+function check(){if(busy)return;const v=val();
+ if(v===ans){busy=true;$('msg').style.color='var(--ok)';$('msg').textContent="⭕ せいかい！";n<5?okSnd():clearSnd();setTimeout(next,n<5?1300:1800)}
+ else{$('msg').style.color='var(--ng)';$('msg').textContent="もうちょっと";ngSnd()}}
+</script></body></html>
