@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>カタカナならびかえ</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fff6e0;--card:#fff;--ink:#4a3b2a;--main:#ff7a59;--sub:#4cb8c4;--ok:#3aa76d;--ng:#e5484d;--slot:#ffe9b8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b2433;--card:#3a3145;--ink:#fbeedd;--slot:#4c4059}}
+:root[data-theme="dark"]{--bg:#2b2433;--card:#3a3145;--ink:#fbeedd;--slot:#4c4059}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;text-align:center;-webkit-user-select:none;user-select:none}
+#app{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:16px}
+h1{font-size:clamp(34px,9vw,64px);margin:0;color:var(--main);letter-spacing:.05em}
+.hero{font-size:clamp(56px,16vw,110px);line-height:1.2}
+.hero span{display:inline-block;animation:bob 1.6s ease-in-out infinite}
+.hero span:nth-child(2){animation-delay:.3s}.hero span:nth-child(3){animation-delay:.6s}
+@keyframes bob{50%{transform:translateY(-14px)}}
+button{font:inherit;color:inherit;cursor:pointer;border:0}
+.big{background:var(--main);color:#fff;font-size:clamp(26px,7vw,40px);font-weight:bold;padding:14px 44px;border-radius:999px;box-shadow:0 6px 0 #c9532f}
+.big.b{background:var(--sub);box-shadow:0 6px 0 #2e8a95}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 #c9532f}
+#fs{position:fixed;left:calc(10px + env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));width:48px;height:48px;border-radius:12px;background:var(--card);font-size:24px;box-shadow:0 2px 6px #0003}
+.foot{font-size:16px;opacity:.75;margin-top:8px}
+.prog{font-size:22px;font-weight:bold}
+.pic{font-size:clamp(90px,26vw,170px);line-height:1.1;background:var(--card);border-radius:28px;padding:8px 32px;box-shadow:0 4px 10px #0002}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:100%}
+.slot,.tile{width:clamp(48px,14vw,76px);height:clamp(56px,16vw,86px);border-radius:14px;font-size:clamp(28px,8vw,46px);font-weight:bold;display:flex;align-items:center;justify-content:center}
+.slot{background:var(--slot);border:3px dashed #d9a441;color:var(--ink)}
+.tile{background:var(--sub);color:#fff;box-shadow:0 5px 0 #2e8a95}
+.gh{color:#bbb;opacity:.75}
+.hintbtn{background:#ffd54a;color:#4a3b2a;font-size:20px;font-weight:bold;padding:8px 24px;border-radius:999px;box-shadow:0 4px 0 #d4a900}
+.tile.used{visibility:hidden}
+#msg{font-size:clamp(26px,7vw,40px);font-weight:bold;min-height:1.4em}
+.ok{color:var(--ok)}.ng{color:var(--ng)}
+.slot.good{background:#bdf0d0;border-color:var(--ok)}
+.slot.bad{background:#ffd0d2;border-color:var(--ng);animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.btns{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<button id="fs" aria-label="全画面表示" title="全画面表示" style="display:none">⛶</button>
+<div id="app"></div>
+<script>
+const RAW="リンゴ🍎 バナナ🍌 ミカン🍊 ブドウ🍇 スイカ🍉 イチゴ🍓 メロン🍈 レモン🍋 トマト🍅 ナス🍆 ニンジン🥕 ジャガイモ🥔 キュウリ🥒 コーン🌽 ピーマン🫑 キノコ🍄 パン🍞 ケーキ🍰 アイス🍦 クッキー🍪 チョコ🍫 アメ🍬 ハンバーガー🍔 ピザ🍕 ラーメン🍜 カレー🍛 チーズ🧀 ミルク🥛 ジュース🧃 ポテト🍟 ライオン🦁 ゾウ🐘 キリン🦒 サル🐒 ウサギ🐰 パンダ🐼 コアラ🐨 クマ🐻 ペンギン🐧 ワニ🐊 カメ🐢 カエル🐸 ヘビ🐍 ウマ🐴 ブタ🐷 ヒツジ🐑 トラ🐯 イルカ🐬 クジラ🐳 タコ🐙 カニ🦀 エビ🦐 チョウチョ🦋 テントウムシ🐞 ハチ🐝 アリ🐜 ニワトリ🐔 ヒヨコ🐤 フクロウ🦉 ゴリラ🦍 ラクダ🐪 シマウマ🦓 カンガルー🦘 ロボット🤖 ロケット🚀 ヘリコプター🚁 バス🚌 タクシー🚕 トラック🚚 パトカー🚓 ヨット⛵ トラクター🚜 バイク🏍️ ベッド🛏️ テレビ📺 カメラ📷 ラジオ📻 ピアノ🎹 ギター🎸 トランペット🎺 ドラム🥁 サッカー⚽ テニス🎾 ゴルフ⛳ スキー🎿 ノート📓 ハサミ✂️ リュック🎒 クレヨン🖍️ ドア🚪 ベル🔔 プレゼント🎁 ハート❤️ ツリー🎄 パソコン💻 ライト💡 ダイヤ💎 テント⛺ サボテン🌵 チューリップ🌷 バラ🌹 スプーン🥄 フォーク🍴 サンタ🎅 ピエロ🤡";
+const W=RAW.split(" ").map(s=>{const m=s.match(/^([ァ-ヶー]+)(.+)$/);return {w:[...m[1]],e:m[2]}});
+const app=document.getElementById("app"),fs=document.getElementById("fs");
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let ctx;
+function note(f,t,d,type){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type||"triangle";o.frequency.value=f;o.connect(g);g.connect(ctx.destination);const s=ctx.currentTime+t;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.25,s+.02);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d+.05)}
+function play(ns,gap){try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();ctx.resume();ns.forEach((f,i)=>note(f,i*gap,.35))}catch(e){}}
+const sndOK=()=>play([523,659,784,1047],.11);
+const sndWin=()=>play([523,659,784,1047,784,1047,1319,1568],.16);
+const sndNG=()=>play([330,262],.15);
+
+let q,qi,w,order,slots,lock,hint;
+function showTop(){
+  fs.style.display="block";
+  app.innerHTML=`<div class="hero"><span>🍎</span><span>🐘</span><span>🚀</span></div>
+  <h1>カタカナならびかえ</h1>
+  <button class="big" id="go">はじめる</button>
+  <div class="foot">きだっち＠明倫小</div>`;
+  document.getElementById("go").onclick=()=>{q=shuffle(W).slice(0,5);qi=0;question();play([523],0)};
+}
+function question(){
+  fs.style.display="none";
+  w=q[qi];const n=w.w.length;let idx=[...Array(n).keys()],tries=0;
+  do{idx=shuffle(idx);tries++}while(tries<30&&idx.map(i=>w.w[i]).join("")===w.w.join(""));
+  order=idx;slots=Array(n).fill(null);lock=false;hint=false;draw();
+}
+function draw(msg,cls,state){
+  app.innerHTML=`<div class="prog">もんだい ${qi+1} / 5</div>
+  <div class="pic">${w.e}</div>
+  <div class="row" id="slots">${slots.map((s,i)=>`<button class="slot ${state||""}" data-s="${i}">${s===null?(hint?`<span class="gh">${w.w[i]}</span>`:""):w.w[s]}</button>`).join("")}</div>
+  <div id="msg" class="${cls||""}">${msg||"&nbsp;"}</div>
+  <button class="hintbtn" id="hint">💡 ヒント</button>
+  <div class="row">${order.map((o,i)=>`<button class="tile ${slots.includes(o)?"used":""}" data-t="${i}">${w.w[o]}</button>`).join("")}</div>`;
+  document.getElementById("hint").onclick=()=>{if(lock)return;hint=true;draw()};
+  app.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{
+    if(lock)return;const o=order[+b.dataset.t],p=slots.indexOf(null);
+    if(p<0||slots.includes(o))return;slots[p]=o;draw();if(slots.indexOf(null)<0)check();
+  });
+  app.querySelectorAll(".slot").forEach(b=>b.onclick=()=>{
+    if(lock)return;slots[+b.dataset.s]=null;draw();
+  });
+}
+function check(){
+  lock=true;
+  if(slots.map(s=>w.w[s]).join("")===w.w.join("")){
+    if(qi===4){sndWin();setTimeout(end,900);draw("せいかい！","ok","good");return}
+    sndOK();draw("せいかい！","ok","good");setTimeout(()=>{qi++;question()},1400);
+  }else{
+    sndNG();draw("もうちょっと","ng","bad");setTimeout(()=>{slots=slots.map(()=>null);lock=false;draw()},1100);
+  }
+}
+function end(){
+  app.innerHTML=`<div class="hero"><span>🎉</span><span>🏆</span><span>🎉</span></div>
+  <h1 style="font-size:clamp(28px,7vw,52px)">おめでとう！<br>つぎもがんばろうね！</h1>
+  <div class="btns"><button class="big" id="again">もういちど</button><button class="big b" id="quit">おわる</button></div>`;
+  document.getElementById("again").onclick=()=>{q=shuffle(W).slice(0,5);qi=0;question()};
+  document.getElementById("quit").onclick=showTop;
+}
+fs.onclick=()=>{const d=document,e=d.documentElement;
+  if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}
+  else{try{(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}catch(x){}}};
+showTop();
+</script>
+</body>
+</html>
