@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>時こくと時間</title>
+<style>
+:root{--bg:#e8f6ff;--card:#fff;--ink:#223045;--a:#ff8a3d;--b:#3da5ff;--ok:#1f9d57;--ng:#e5484d;--line:#cfe3f3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13202c;--card:#1d2f3f;--ink:#f1f5f9;--line:#3a5368}}
+:root[data-theme="dark"]{--bg:#13202c;--card:#1d2f3f;--ink:#f1f5f9;--line:#3a5368}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;font-size:18px}
+.screen{display:none;min-height:100%;box-sizing:border-box;padding:14px;flex-direction:column;align-items:center}
+.screen.on{display:flex}
+button{font:inherit;cursor:pointer;border:0;border-radius:16px;padding:12px 22px;color:#fff;background:var(--b);box-shadow:0 4px 0 rgba(0,0,0,.18)}
+button:active{transform:translateY(2px)}
+button.o{background:var(--a)}button.g{background:var(--ok)}
+button:disabled{opacity:.4}
+#start{justify-content:center;gap:22px;text-align:center;position:relative}
+#fs{position:absolute;left:12px;top:12px;font-size:15px;padding:8px 12px;background:var(--card);color:var(--ink)}
+h1{font-size:clamp(40px,10vw,76px);margin:0;color:var(--a)}
+.courses{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.courses button{font-size:28px;padding:18px 34px}
+#credit{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:20px}
+#game{gap:10px;max-width:760px;margin:auto}
+.top{display:flex;justify-content:space-between;width:100%;font-weight:700}
+.card{background:var(--card);border:3px solid var(--line);border-radius:20px;padding:14px 18px;width:100%;box-sizing:border-box}
+#q{font-size:clamp(20px,4.6vw,28px);line-height:1.7;margin:0}
+#clocks,#hint{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+figure{margin:0;text-align:center}
+.clk{width:min(42vw,190px)}
+figcaption{font-weight:700}
+#hint{border-style:dashed;border-color:var(--a)}
+[hidden]{display:none!important}
+#cw{display:flex;gap:14px;justify-content:center;align-items:center;width:100%}
+#cw #clocks{flex:0 0 auto}
+#cw #hint{width:auto;flex:1 1 0;min-width:0;gap:8px}
+#cw .clk{width:min(30vw,170px)}
+.row{display:flex;align-items:center;gap:10px;font-size:24px;flex-wrap:wrap;justify-content:center}
+#ans{display:inline-block;min-width:60px;height:54px;line-height:54px;text-align:center;font-size:34px;background:var(--card);border:3px solid var(--b);border-radius:12px}
+#pad{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%;max-width:600px}
+#pad button{font-size:26px;padding:10px 0;background:var(--card);color:var(--ink);border:3px solid var(--b)}
+#pad button.s{background:var(--b);color:#fff}
+#msg{font-size:30px;font-weight:700;min-height:42px}
+.acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+@media(max-width:480px){#pad{grid-template-columns:repeat(5,1fr)}}
+#end{justify-content:center;text-align:center;gap:18px}
+#end h2{font-size:clamp(30px,7vw,52px);margin:0}
+#cv{position:fixed;inset:0;pointer-events:none;z-index:50;display:none}
+</style></head><body>
+<canvas id="cv"></canvas>
+
+<section id="start" class="screen on">
+ <button id="fs">⛶ ぜんがめん</button>
+ <h1>時こくと時間</h1>
+ <div class="courses"><button class="g" data-c="easy">かんたん</button><button class="o" data-c="hard">むずかしい</button></div>
+ <div id="credit">きだっち＠明倫小</div>
+</section>
+
+<section id="game" class="screen">
+ <div class="top"><span id="no"></span><span id="cn"></span></div>
+ <div class="card"><p id="q"></p></div>
+ <div id="cw"><div id="clocks"></div>
+ <div id="hint" class="card" hidden></div></div>
+ <div class="row">こたえ <span id="ans"></span> <span id="unit"></span></div>
+ <div id="pad"></div>
+ <div id="msg"></div>
+ <div class="acts"><button class="o" id="hb">ヒント</button><button class="g" id="ck">こたえあわせ</button><button id="nx" hidden></button></div>
+</section>
+
+<section id="end" class="screen">
+ <h2 id="et"></h2><p id="es" style="font-size:24px"></p>
+ <div class="acts"><button class="g" id="again">もういちど</button><button class="o" id="home">はじめへ</button></div>
+</section>
+
+<script>
+const $=id=>document.getElementById(id), R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+let ac;
+function play(seq,type,vol){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume();let t=ac.currentTime+.02;seq.forEach(([f,d])=>{if(f){const o=ac.createOscillator(),g=ac.createGain();o.type=type||'triangle';o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.2,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d*.95);o.start(t);o.stop(t+d)}t+=d})}catch(e){}}
+const OK=[[523,.14],[659,.14],[784,.14],[659,.14],[784,.14],[1047,.45]],
+NG=[[330,.18],[262,.3]],
+WIN=[[523,.15],[523,.15],[784,.15],[784,.15],[880,.15],[880,.15],[784,.4],[698,.15],[698,.15],[659,.15],[659,.15],[587,.15],[587,.15],[523,.4],[784,.14],[1047,.14],[1319,.14],[1047,.14],[784,.14],[1047,.14],[1319,.14],[1568,.7]];
+
+const pn=m=>[0,1,3,4,6,8].includes(m%10)?'ぷん':'分';
+const fmt=(h,m)=>h+'時'+(m?m+'分':'');
+const EASY=[
+{d:-1,t:'とけいの 時こくは、さんすうの じゅぎょうが はじまる 時こくです。ゆうきさんは {t}に きょうしつに もどりました。じゅぎょうの なん分 まえ ですか。'},
+{d:1,t:'とけいの 時こくは、おやつの 時こくです。おやつの あと、{t}に 水を のみました。おやつの なん分 あと ですか。'},
+{d:-1,t:'とけいの 時こくに、山の こうえんで ともだちと あう やくそくを しました。そうたさんは {t}に こうえんに つきました。やくそくの なん分 まえ ですか。'},
+{d:1,t:'とけいの 時こくに、先生が きょうしつに きました。たくみさんは {t}に きょうしつに 入りました。先生の なん分 あと ですか。'},
+{d:-1,t:'とけいの 時こくに、学校の バスが 出ます。みおさんは {t}に バスていに つきました。バスの なん分 まえ ですか。'}];
+const HARD=[
+{k:'m',t:'ゆうきさんは {a}に うちを 出て、{b}に 学校に つきました。なん分 かかりましたか。'},
+{k:'m',c:1,t:'プールで {a}から {b}まで およぎました。なん分 およぎましたか。'},
+{k:'h',a:[8,9,10],lo:6,hi:9,t:'きのうの よる {a}に ねて、あさ {b}に おきました。なん時かん ねましたか。'},
+{k:'m',t:'休みの 時かんは {a}から {b}までです。なん分 ありますか。'},
+{k:'h',a:[7,8,9,10],lo:3,hi:9,t:'山に いきました。{a}に うちを 出て、{b}に かえりました。なん時かん 山に いましたか。'}];
+
+function hand(deg,len,w,c){const a=deg*Math.PI/180;return `<line x1="0" y1="0" x2="${Math.sin(a)*len}" y2="${-Math.cos(a)*len}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`}
+function clock(h,m,label){let s=`<svg viewBox="-110 -110 220 220" class="clk"><circle r="102" fill="var(--card)" stroke="var(--b)" stroke-width="6"/>`;
+for(let i=0;i<60;i++){const a=i*Math.PI/30,l=i%5?4:10;s+=`<line x1="${Math.sin(a)*96}" y1="${-Math.cos(a)*96}" x2="${Math.sin(a)*(96-l)}" y2="${-Math.cos(a)*(96-l)}" stroke="var(--ink)" stroke-width="${i%5?1:2.5}"/>`}
+for(let n=1;n<=12;n++){const a=n*Math.PI/6;s+=`<text x="${Math.sin(a)*70}" y="${-Math.cos(a)*70+7}" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">${n}</text>`}
+s+=hand(((h%12)+m/60)*30,50,7,'var(--ink)')+hand(m*6,80,4,'var(--a)')+'<circle r="6" fill="var(--ink)"/></svg>';
+return `<figure>${s}<figcaption>${label}</figcaption></figure>`}
+
+let course,qs,i,miss,badNow,sel,done;
+function build(c){return (c==='easy'?EASY:HARD).map(sc=>{
+ if(c==='easy'){const oh=R(1,12),om=R(0,5)*10,d=R(1,5)*10,t=((oh%12)*60+om-sc.d*d+720)%720,h=Math.floor(t/60)||12,m=t%60;
+  return{text:sc.t.replace('{t}',fmt(oh,om)),ans:d,unit:'分'+(sc.d<0?' まえ':' あと'),clocks:clock(h,m,'この とけい'),hint:clock(oh,om,fmt(oh,om)),hl:'この 時こくの とけいを みて、はりの すすみを かぞえよう。'}}
+ let a,b,d;
+ if(sc.k==='h'){const ah=sc.a[R(0,sc.a.length-1)];d=R(sc.lo,sc.hi);a=[ah,0];b=[(ah-1+d)%12+1,0]}
+ else{let am,ah=R(1,12);if(sc.c){am=R(6,11)*5;d=R(Math.ceil((60-am)/5),9)*5}else{am=R(0,11)*5;d=R(1,9)*5}
+  const s=am+d;a=[ah,am];b=[(ah-1+(s>=60?1:0))%12+1,s%60]}
+ return{text:sc.t.replace('{a}',fmt(...a)).replace('{b}',fmt(...b)),ans:d,unit:sc.k==='h'?'時かん':'分',clocks:'',hint:clock(...a,'はじめ '+fmt(...a))+clock(...b,'おわり '+fmt(...b)),hl:'ふたつの とけいを くらべて かんがえよう。'}})}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function begin(c){course=c;qs=build(c);i=0;miss=0;badNow=0;show('game');load()}
+function load(){const q=qs[i];sel=null;done=false;badNow=0;
+ $('no').textContent=`${i+1} / 5 もんめ`;$('cn').textContent=course==='easy'?'かんたん':'むずかしい';
+ $('q').textContent=q.text;$('clocks').innerHTML=q.clocks;$('clocks').hidden=!q.clocks;
+ $('hint').hidden=true;$('hint').innerHTML='';$('ans').textContent='';$('unit').textContent=q.unit;$('msg').textContent='';$('msg').style.color='';
+ $('nx').hidden=true;$('ck').disabled=false;$('hb').disabled=false;
+ document.querySelectorAll('#pad button').forEach(b=>{b.classList.remove('s');b.disabled=false})}
+$('pad').innerHTML=[1,2,3,4,5,6,7,8,9,0,'けす'].map(n=>`<button>${n}</button>`).join('');
+$('pad').onclick=e=>{const b=e.target.closest('button');if(!b||done)return;const x=b.textContent;if(x==='けす'||(!sel&&x==='0')){sel=null;$('ans').textContent='';return}sel=(sel&&sel.length<2)?sel+x:x;$('ans').textContent=sel;$('msg').textContent='';
+ document.querySelectorAll('#pad button').forEach(x=>x.classList.toggle('s',x===b))};
+$('hb').onclick=()=>{const q=qs[i];$('hint').innerHTML=q.hint+`<p style="width:100%;text-align:center;margin:0">${q.hl}</p>`;$('hint').hidden=false};
+$('ck').onclick=()=>{if(done)return;if(sel===null){$('msg').style.color='var(--ink)';$('msg').textContent='すうじを えらんでね';return}
+ if(+sel===qs[i].ans){done=true;if(badNow)miss++;$('msg').style.color='var(--ok)';$('msg').textContent='せいかい！🎵';play(OK);
+  document.querySelectorAll('#pad button').forEach(b=>b.disabled=true);$('ck').disabled=true;$('nx').textContent=i<4?'つぎの もんだい':'けっかを みる';$('nx').hidden=false}
+ else{badNow=1;$('msg').style.color='var(--ng)';$('msg').textContent='もうちょっと';play(NG,'sine');sel=null;$('ans').textContent='';document.querySelectorAll('#pad button').forEach(b=>b.classList.remove('s'))}};
+$('nx').onclick=()=>{if(i<4){i++;load()}else finish()};
+function finish(){show('end');const ok=5-miss;
+ if(!miss){$('et').textContent='🌸 ぜんぶ せいかい！ 🌸';$('es').textContent='すごい！ ぜんもん せいかいだよ！';play(WIN,'triangle',.25);bloom()}
+ else{$('et').textContent='よくがんばったね！';$('es').textContent=`5もん中 ${ok}もん、いちどで せいかい！`;play(OK)}}
+$('again').onclick=()=>begin(course);$('home').onclick=()=>show('start');
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}begin(b.dataset.c)});
+$('fs').onclick=()=>{try{const d=document,e=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const p=(e.requestFullscreen||e.webkitRequestFullscreen).call(e);if(p&&p.catch)p.catch(()=>{})}}catch(x){}};
+
+let raf;
+function bloom(){const cv=$('cv'),c=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;cv.style.display='block';
+ const P=Array.from({length:130},()=>({x:Math.random()*cv.width,y:-Math.random()*cv.height,r:6+Math.random()*8,s:1+Math.random()*2.5,w:Math.random()*6.28,v:.02+Math.random()*.04,h:325+Math.random()*30}));
+ cancelAnimationFrame(raf);const t0=performance.now();
+ (function f(t){c.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.s;p.w+=p.v;p.x+=Math.sin(p.w)*1.5;if(p.y>cv.height+20&&t-t0<10000)p.y=-20;
+  c.save();c.translate(p.x,p.y);c.rotate(p.w);c.fillStyle=`hsl(${p.h},85%,78%)`;c.beginPath();c.ellipse(0,0,p.r,p.r*.55,0,0,7);c.fill();c.restore()});
+  if(t-t0<14000)raf=requestAnimationFrame(f);else cv.style.display='none'})(t0)}
+</script></body></html>
