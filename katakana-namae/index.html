@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>カタカナのなまえ</title>
+<style>
+:root{--bg:#fff8e7;--card:#fff;--ink:#3b2f2f;--main:#ff7a59;--sub:#4aa8ff;--ok:#2fb26b;--ng:#e5484d;--key:#ffe9a8;--line:#f2c14e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2433;--card:#3a3246;--ink:#fff3dc;--key:#5a4c6e;--line:#8a7ab0}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;overflow:hidden;user-select:none}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) 12px 12px}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:0}
+#fs{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:10px;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:8px 14px;font-size:16px}
+h1{font-size:clamp(28px,6vw,64px);margin:0 0 8px;color:var(--main);text-align:center}
+.sub{font-size:clamp(16px,2.5vw,24px);margin-bottom:28px;text-align:center}
+.big{font-size:clamp(22px,3.5vw,36px);padding:16px 36px;margin:8px;border-radius:24px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.easy{background:var(--ok)}.hard{background:var(--ng)}
+#credit{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-size:20px}
+#game{justify-content:flex-start;padding:8px}
+#top{width:100%;display:flex;justify-content:space-between;align-items:center;font-size:20px;padding:4px 8px}
+#home{background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:4px 12px;font-size:16px}
+#main{flex:1;min-height:0;width:100%;display:flex;gap:12px;margin:4px 0}
+#left,#right{flex:1;background:var(--card);border-radius:20px;border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;min-width:0}
+#pic{font-size:clamp(80px,22vh,200px);line-height:1}
+#boxes{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+.b{width:clamp(40px,7vw,64px);height:clamp(48px,9vw,76px);border-bottom:5px solid var(--main);font-size:clamp(28px,5vw,48px);display:flex;align-items:center;justify-content:center;background:rgba(255,200,100,.2);border-radius:8px 8px 0 0}
+#typed{display:none;font-size:clamp(26px,5vw,44px);width:90%;text-align:center;padding:8px;border:3px solid var(--sub);border-radius:12px;margin-bottom:10px;font-family:inherit;background:var(--bg);color:var(--ink)}
+#acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#acts button{font-size:clamp(15px,2.2vw,22px);padding:10px 14px;border-radius:14px;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+#del{background:#8d6cd6}#clr{background:#e08a1e}#go{background:var(--ok)}#hint{background:var(--sub)}
+#msg{min-height:30px;font-size:clamp(18px,3vw,28px);margin-top:8px;font-weight:bold;text-align:center}
+#kb{width:100%;max-width:900px;display:flex;flex-direction:column;gap:5px}
+#grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.k{font-weight:bold;background:var(--key);color:var(--ink);border:2px solid var(--line);border-radius:10px;font-size:clamp(18px,3.4vh,30px);height:clamp(34px,6.4vh,56px);box-shadow:0 3px 0 var(--line)}
+.k.e{visibility:hidden}.k:active{transform:translateY(2px)}
+.k.hl{background:var(--main);color:#fff}
+#mods{display:flex;gap:5px}
+#mods .k{flex:1;background:#d9ecff;font-size:clamp(14px,2.6vh,22px)}
+body.hardmode #kb{display:none}body.hardmode #typed{display:block}body.hardmode #boxes{display:none}
+#ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+#ov span{font-size:clamp(40px,10vw,100px);font-weight:bold;padding:16px 40px;border-radius:30px;background:var(--card);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#ov.ng span{color:var(--ng);animation:sh .4s}#ov.ok span{color:var(--ok);animation:pop .4s}
+@keyframes sh{25%{transform:translateX(-18px)}75%{transform:translateX(18px)}}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.15)}}
+#cv{position:fixed;inset:0;pointer-events:none;z-index:9}
+#res h1{color:var(--ok)}
+@media (max-width:640px){#main{flex-direction:column}}
+</style></head><body>
+
+<div id="start" class="screen on">
+ <button id="fs">⛶ ぜんがめん</button>
+ <h1>カタカナのなまえ</h1>
+ <div class="sub">えを みて ひらがなで こたえよう！</div>
+ <div><button class="big easy" data-m="easy">かんたん</button><button class="big hard" data-m="hard">むずかしい</button></div>
+ <div id="credit">きだっち＠明倫小</div>
+</div>
+
+<div id="game" class="screen">
+ <div id="top"><button id="home">← もどる</button><div id="prog"></div><div>⭐<span id="sc">0</span></div></div>
+ <div id="main">
+  <div id="left"><div id="pic"></div></div>
+  <div id="right">
+   <div id="boxes"></div>
+   <input id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="カタカナでにゅうりょく">
+   <div id="acts"><button id="del">１もじけす</button><button id="clr">すべてけす</button><button id="go">こたえる</button><button id="hint">ひんと</button></div>
+   <div id="msg"></div>
+  </div>
+ </div>
+ <div id="kb"><div id="grid"></div>
+  <div id="mods"><button class="k" id="mDak">゛ だくてん</button><button class="k" id="mHan">゜ はんだくてん</button><button class="k" id="mSml">ャュョッ ちいさく</button></div></div>
+</div>
+
+<div id="res" class="screen"><h1 id="rt"></h1><div class="sub" id="rs"></div>
+ <div><button class="big easy" id="again">もういちど</button><button class="big hard" id="title">タイトルへ</button></div></div>
+<div id="ov"><span></span></div><canvas id="cv"></canvas>
+
+<script>
+const RAW="ペン🖊️ バス🚌 ドア🚪 ベル🔔 パン🍞 ゾウ🐘 クマ🐻 サル🐵 ネコ🐱 イヌ🐶 イカ🦑 タコ🐙 カメ🐢 ピザ🍕 ナス🍆 スシ🍣 ボタン🔘 バナナ🍌 トマト🍅 レモン🍋 メロン🍈 ピアノ🎹 ラジオ📻 カメラ📷 ポスト📮 テレビ📺 ドラム🥁 ラッパ📯 キリン🦒 ゴリラ🦍 パンダ🐼 クジラ🐳 イルカ🐬 ウサギ🐰 カエル🐸 ヒヨコ🐥 ミカン🍊 イチゴ🍓 リンゴ🍎 スイカ🍉 ブドウ🍇 サクラ🌸 ハサミ✂️ メガネ👓 トケイ⏰ カバン🎒 クルマ🚗 アイス🍦 プリン🍮 シャツ👕 ペンギン🐧 ライオン🦁 ロケット🚀 ソックス🧦 クレヨン🖍️ ロボット🤖 ニワトリ🐔 フクロウ🦉 コウモリ🦇 シマウマ🦓 ミツバチ🐝 キャベツ🥬 ニンジン🥕 ハチミツ🍯 オニギリ🍙 タコヤキ🍢 ヒコウキ✈️ デンシャ🚃 ガソリン⛽ アンテナ📡 ハリネズミ🦔 カブトムシ🪲 カタツムリ🐌 ジャガイモ🥔 サクランボ🍒 ジテンシャ🚲 ヘルメット🪖 ビスケット🍪 ボウリング🎳 コンセント🔌 ケーキ🍰 カレー🍛 ギター🎸 ゲーム🎮 ボール⚽ スキー⛷️ ノート📓 スープ🥣 チーズ🧀 バター🧈 コーラ🥤 ビール🍺 ブーツ🥾 ボート🚤 タワー🗼 ジュース🧃 コーヒー☕ ラーメン🍜 ドーナツ🍩 ステーキ🥩";
+const W=RAW.split(" ").map(s=>{const w=s.match(/^[ァ-ヶー]+/)[0];return{w,e:s.slice(w.length),n:Array.from(w).length}});
+const LENS=[2,3,3,4,5];
+const COLS=["ワ","ラ","ヤ","マ","ハ","ナ","タ","サ","カ","ア"];
+const T={ア:"アイウエオ",カ:"カキクケコ",サ:"サシスセソ",タ:"タチツテト",ナ:"ナニヌネノ",ハ:"ハヒフヘホ",マ:"マミムメモ",ヤ:"ヤ_ユ_ヨ",ラ:"ラリルレロ",ワ:"ワヲンー_"};
+const $=id=>document.getElementById(id);
+let mode="easy",qi=0,cur=null,ans=[],miss=0,right=0,used=new Set(),lock=false,AC=null;
+
+/* sound */
+function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC}
+function note(f,t,d,type="triangle",v=.25){const c=ac(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(c.destination);const s=c.currentTime+t;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.02);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d+.05)}
+const F={C:523,D:587,E:659,G:784,A:880,B:988,C2:1047,E2:1319,G2:1568};
+function sOK(){[F.C,F.E,F.G,F.C2].forEach((f,i)=>note(f,i*.12,.3))}
+function sNG(){note(330,0,.25,"square",.12);note(262,.22,.4,"square",.12)}
+function sFan(){const m=[F.C,F.E,F.G,F.C2,F.G,F.C2,F.E2,F.G2,F.E2,F.G2,F.G2];m.forEach((f,i)=>{note(f,i*.16,.35);note(f/2,i*.16,.35,"sine",.15)});[F.C2,F.E2,F.G2].forEach(f=>note(f,m.length*.16,1.2,"triangle",.2))}
+
+/* confetti */
+function petals(){const cv=$("cv"),x=cv.getContext("2d");cv.width=innerWidth;cv.height=innerHeight;
+ const P=Array.from({length:140},()=>({x:Math.random()*cv.width,y:-Math.random()*cv.height,s:8+Math.random()*12,v:1.5+Math.random()*3,w:Math.random()*6,r:Math.random()*6,c:["#ffb7c5","#ff8fab","#ffd6e0","#fff0f3"][Math.floor(Math.random()*4)]}));
+ let t=0;(function f(){x.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.v;p.w+=.03;p.x+=Math.sin(p.w)*2;p.r+=.05;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.beginPath();x.ellipse(0,0,p.s,p.s/2,0,0,7);x.fill();x.restore();if(p.y>cv.height+20&&t<300){p.y=-20}});
+ if(++t<420)requestAnimationFrame(f);else x.clearRect(0,0,cv.width,cv.height)})()}
+
+/* screens */
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function flash(txt,cls,ms){const o=$("ov");o.className=cls;o.firstElementChild.textContent=txt;o.style.display="flex";setTimeout(()=>o.style.display="none",ms)}
+
+/* keyboard */
+function buildKb(){const g=$("grid");g.innerHTML="";
+ for(let r=0;r<5;r++)COLS.forEach(c=>{const ch=T[c][r]||"_";const b=document.createElement("button");b.className="k"+(ch==="_"?" e":"");b.textContent=ch==="_"?"":ch;if(ch!=="_")b.onclick=()=>add(ch);g.appendChild(b)})}
+function render(){const n=cur.n;
+ if(mode==="easy"){$("boxes").innerHTML=Array.from({length:n},(_,i)=>`<div class="b">${ans[i]||""}</div>`).join("")}
+ else $("typed").value=ans.join("")}
+function add(ch){if(lock||ans.length>=cur.n)return;ans.push(ch);render()}
+const BASE="カキクケコサシスセソタチツテトハヒフヘホ",DAK="ガギグゲゴザジズゼゾダヂヅデドバビブベボ",HAN="パピプペポ",SM="ヤユヨツ",SS="ャュョッ";
+function modLast(fn){if(lock||!ans.length)return;const c=ans[ans.length-1],r=fn(c);if(r)ans[ans.length-1]=r;render()}
+const dak=c=>{let i=BASE.indexOf(c);if(i>=0)return DAK[i];i=DAK.indexOf(c);if(i>=0)return BASE[i];i=HAN.indexOf(c);if(i>=0)return DAK[15+i]};
+const han=c=>{let i=BASE.indexOf(c);if(i>=15)return HAN[i-15];i=DAK.indexOf(c);if(i>=15)return HAN[i-15];i=HAN.indexOf(c);if(i>=0)return BASE[15+i]};
+const sml=c=>{let i=SM.indexOf(c);if(i>=0)return SS[i];i=SS.indexOf(c);if(i>=0)return SM[i]};
+$("mDak").onclick=()=>modLast(dak);$("mHan").onclick=()=>modLast(han);$("mSml").onclick=()=>modLast(sml);
+
+/* game flow */
+function start(m){ac();mode=m;qi=0;miss=0;right=0;used=new Set();ans=[];$("sc").textContent=0;
+ document.body.classList.toggle("hardmode",m==="hard");show("game");nextQ()}
+function nextQ(){const n=LENS[qi];const pool=W.filter(x=>x.n===n&&!used.has(x.w));cur=pool[Math.floor(Math.random()*pool.length)];used.add(cur.w);
+ ans=[];lock=false;miss0=false;$("pic").textContent=cur.e;$("prog").textContent=`もんだい ${qi+1} / 5　（${n}もじ）`;$("msg").textContent="";render();
+ if(mode==="hard")$("typed").focus()}
+let miss0=false;
+function check(){if(lock)return;if(ans.length===0)return;
+ if(ans.join("")===cur.w){lock=true;if(!miss0)right++;$("sc").textContent=right;sOK();flash("せいかい！","ok",1300);
+  setTimeout(()=>{qi++;qi<5?nextQ():finish()},1500)}
+ else{miss++;miss0=true;sNG();flash("もうちょっと","ng",1100);$("msg").textContent="もうちょっと！ もういちど やってみよう"}}
+function finish(){show("res");
+ if(miss===0){$("rt").textContent="ぜんもん せいかい！おめでとう！";$("rs").textContent="すごい！ ぜんぶ いっぱつで せいかい！";sFan();petals()}
+ else{$("rt").textContent="おつかれさま！";$("rs").textContent=`いっぱつで せいかい：${right} / 5 もん`;sOK()}}
+$("del").onclick=()=>{if(lock)return;ans.pop();render()};
+$("clr").onclick=()=>{if(lock)return;ans=[];render()};
+$("go").onclick=check;
+$("hint").onclick=()=>{if(lock)return;const w=Array.from(cur.w);let i=0;while(i<ans.length&&ans[i]===w[i])i++;
+ clearTimeout(window.ht);const gh=`<span style="opacity:.25">${w[i]}</span>`;
+ if(mode==="easy"){const bs=$("boxes").children;if(bs[i])bs[i].innerHTML=gh;window.ht=setTimeout(render,1000)}
+ else{$("msg").innerHTML=gh;window.ht=setTimeout(()=>$("msg").innerHTML="",1000)}};
+$("typed").addEventListener("input",e=>{if(e.isComposing)return;ans=Array.from(e.target.value).slice(0,cur.n)});
+$("typed").addEventListener("compositionend",e=>{ans=Array.from(e.target.value).slice(0,cur.n);e.target.value=ans.join("")});
+$("typed").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){ans=Array.from($("typed").value);check()}});
+document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>start(b.dataset.m));
+$("home").onclick=()=>show("start");$("title").onclick=()=>show("start");$("again").onclick=()=>start(mode);
+$("fs").onclick=()=>{const d=document;if(d.fullscreenElement){d.exitFullscreen()}else{(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement)}};
+buildKb();
+</script></body></html>
