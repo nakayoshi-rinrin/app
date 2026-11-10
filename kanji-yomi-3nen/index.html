@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3ねんせいのかんじ よみかた</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff8e1;--card:#fff;--ink:#3b2f2f;--pri:#ff7043;--ok:#43a047;--ng:#e53935;--tile:#ffe082;--line:#ffb74d}
+:root[data-theme="dark"]{--bg:#1e1a14;--card:#2c261d;--ink:#fff3e0;--pri:#ff8a65;--tile:#6d5a2a;--line:#a1763a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1a14;--card:#2c261d;--ink:#fff3e0;--pri:#ff8a65;--tile:#6d5a2a;--line:#a1763a}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;text-align:center;overflow-x:hidden}
+#app{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:12px;max-width:640px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer;border:3px solid var(--line);border-radius:16px;background:var(--card)}
+#fs{align-self:flex-start;padding:6px 12px;font-size:18px}
+.top{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px}
+h1{font-size:clamp(26px,7vw,40px);margin:0;color:var(--pri)}
+.big{font-size:clamp(70px,22vw,120px)}
+.go{background:var(--pri);color:#fff;border:none;font-size:28px;padding:16px 48px;font-weight:bold}
+#game,#end{display:none;width:100%;flex:1;flex-direction:column;align-items:center;gap:12px}
+.prog{font-size:20px;font-weight:bold}
+.pic{font-size:clamp(90px,28vw,150px);line-height:1.1;background:var(--card);border-radius:24px;padding:10px 30px;border:3px solid var(--line)}
+.kanji{font-size:clamp(48px,14vw,80px);font-weight:bold}
+.slots{display:flex;gap:8px;justify-content:center;min-height:62px}
+.slot{width:54px;height:60px;border-bottom:5px solid var(--line);font-size:36px;font-weight:bold}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:100%}
+.tile{background:var(--tile);font-size:clamp(26px,8vw,38px);font-weight:bold;padding:12px 0}
+.tile:disabled{opacity:.25}
+.row{display:flex;gap:12px}
+.row button{padding:10px 22px;font-size:20px}
+#msg{min-height:40px;font-size:30px;font-weight:bold}
+.ok{color:var(--ok)}.ng{color:var(--ng)}
+</style></head><body>
+<div id="app">
+<button id="fs">⛶ ぜんがめん</button>
+<div id="top" class="top">
+<div class="big">📖</div>
+<h1>3ねんせいの<br>かんじ よみかた</h1>
+<button class="go" id="start">スタート</button>
+</div>
+<div id="credit" style="font-size:18px;padding:12px 0">きだっち＠明倫小</div>
+<div id="game">
+<div class="prog" id="prog"></div>
+<div class="pic" id="pic"></div>
+<div class="kanji" id="kanji"></div>
+<div class="slots" id="slots"></div>
+<div id="msg"></div>
+<div class="tiles" id="tiles"></div>
+<div class="row"><button id="back">⌫ けす</button><button id="hint">💡 ヒント</button></div>
+</div>
+<div id="end"><div class="big" id="eIcon"></div><div id="eMsg" style="font-size:30px;font-weight:bold"></div><button class="go" id="again">もういちど</button></div>
+</div>
+<script>
+const RAW=`安い|やすい|🏷️
+安全|あんぜん|⛑️
+暗い|くらい|🌑
+医者|いしゃ|👨‍⚕️
+歯医者|はいしゃ|🦷
+歯|は|😁
+病院|びょういん|🏥
+病気|びょうき|🤒
+薬|くすり|💊
+運動|うんどう|🤸
+運ぶ|はこぶ|📦
+運転|うんてん|🚘
+泳ぐ|およぐ|🏊
+駅|えき|🚉
+駅員|えきいん|🧑‍✈️
+店員|てんいん|🛍️
+屋根|やね|🏠
+部屋|へや|🛏️
+温かい|あたたかい|♨️
+荷物|にもつ|🧳
+開く|ひらく|📂
+寒い|さむい|🥶
+漢字|かんじ|🈁
+図書館|としょかん|📚
+岸|きし|⛵
+起きる|おきる|⏰
+客|きゃく|🛎️
+急ぐ|いそぐ|💨
+野球|やきゅう|⚾
+去年|きょねん|📆
+橋|はし|🌉
+銀|ぎん|🥈
+銀行|ぎんこう|🏦
+苦い|にがい|😖
+血|ち|🩸
+湖|みずうみ|🏞️
+港|みなと|⚓
+皿|さら|🍽️
+使う|つかう|🛠️
+始める|はじめる|🚩
+指|ゆび|👆
+次|つぎ|⏭️
+仕事|しごと|💼
+持つ|もつ|🎒
+写真|しゃしん|📷
+守る|まもる|🛡️
+拾う|ひろう|🤲
+終わり|おわり|🔚
+習う|ならう|🎹
+集める|あつめる|🧺
+住む|すむ|🏘️
+重い|おもい|🏋️
+暑い|あつい|🥵
+助ける|たすける|🆘
+消す|けす|🧽
+勝つ|かつ|🏆
+乗る|のる|🚌
+植える|うえる|🪴
+深い|ふかい|🌊
+進む|すすむ|⏩
+世界|せかい|🌏
+昔|むかし|👴
+昔話|むかしばなし|📖
+送る|おくる|📮
+速い|はやい|🚄
+打つ|うつ|🏏
+待つ|まつ|⌛
+問題|もんだい|❓
+宿題|しゅくだい|📝
+炭火|すみび|🔥
+短い|みじかい|📏
+着る|きる|👕
+調べる|しらべる|🔍
+庭|にわ|🌷
+笛|ふえ|🎶
+鉄|てつ|🔩
+鉄道|てつどう|🚆
+転ぶ|ころぶ|🤕
+投げる|なげる|🤾
+豆|まめ|🫘
+島|しま|🏝️
+湯|ゆ|♨️
+登る|のぼる|🧗
+動く|うごく|🐾
+動物|どうぶつ|🦁
+動物園|どうぶつえん|🦓
+遊園地|ゆうえんち|🎢
+波|なみ|🌊
+配る|くばる|📬
+箱|はこ|🎁
+畑|はたけ|🥕
+坂|さか|⛰️
+坂道|さかみち|🛤️
+板|いた|🪵
+皮|かわ|🍌
+美しい|うつくしい|🌈
+鼻|はな|👃
+筆|ふで|🖌️
+氷|こおり|🧊
+氷水|こおりみず|🥤
+服|ふく|👗
+洋服|ようふく|👚
+返す|かえす|↩️
+勉強|べんきょう|📓
+味|あじ|😋
+命|いのち|💗
+油|あぶら|🛢️
+遊ぶ|あそぶ|🛝
+羊|ひつじ|🐑
+葉っぱ|はっぱ|🍂
+言葉|ことば|💬
+落ちる|おちる|⬇️
+流れる|ながれる|🏞️
+旅|たび|✈️
+旅行|りょこう|🧳
+両手|りょうて|🙌
+緑|みどり|🟢
+列車|れっしゃ|🚃
+練習|れんしゅう|🎻
+横|よこ|↔️
+育てる|そだてる|🌱
+体育|たいいく|🏃
+幸せ|しあわせ|🥰
+根|ね|🌿
+大根|だいこん|🥗
+祭り|まつり|🏮
+軽い|かるい|🪶
+曲がる|まがる|↪️
+向こう|むこう|👉
+受ける|うける|🙌
+真ん中|まんなか|🎯
+息|いき|😮‍💨
+家族|かぞく|👨‍👩‍👧
+悲しい|かなしい|😢
+負ける|まける|😞
+太陽|たいよう|🌞
+お礼|おれい|🙇`;
+const POOL=RAW.split("\n").map(l=>{const[k,y,e]=l.split("|");return{k,y,e}});
+const KANA="あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだでどばびぶべぼぱぴぷぺぽっゃゅょ".split("");
+const $=id=>document.getElementById(id);
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let AC;
+function tone(seq){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();let t=AC.currentTime;seq.forEach(([f,d,type])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||"triangle";o.frequency.value=f;g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);t+=d*.9})}catch(e){}}
+const S_OK=[[523,.15],[659,.15],[784,.3]];
+const S_NG=[[330,.25,"square"],[247,.4,"square"]];
+const S_WIN=[[523,.15],[659,.15],[784,.15],[1047,.3],[784,.15],[1047,.15],[1319,.2],[1175,.15],[1319,.5]];
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ja-JP";u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+let qs,qi,cur,pick,miss,lock;
+function show(id){$("credit").style.display=id==="top"?"block":"none";["top","game","end"].forEach(i=>$(i).style.display=i===id?"flex":"none")}
+function begin(){qs=shuf(POOL).slice(0,5);qi=0;miss=0;show("game");load()}
+function load(){cur=qs[qi];pick=[];lock=false;
+ $("prog").textContent=`${qi+1} / 5 もんめ`;$("pic").textContent=cur.e;$("kanji").textContent=cur.k;$("msg").textContent="";
+ const ans=[...cur.y];const pool=KANA.filter(c=>!ans.includes(c));
+ tiles=shuf([...ans,...shuf(pool).slice(0,10-ans.length)]).map((c,i)=>({c,used:false,i}));
+ draw()}
+let tiles=[];
+function draw(){
+ const n=[...cur.y].length;
+ $("slots").innerHTML=Array.from({length:n},(_,i)=>`<div class="slot">${pick[i]?pick[i].c:""}</div>`).join("");
+ $("tiles").innerHTML="";
+ tiles.forEach(t=>{const b=document.createElement("button");b.className="tile";b.textContent=t.c;b.disabled=t.used;b.onclick=()=>tap(t);$("tiles").appendChild(b)})}
+function tap(t){if(lock||t.used)return;t.used=true;pick.push(t);draw();
+ if(pick.length===[...cur.y].length)check()}
+function check(){lock=true;
+ if(pick.map(t=>t.c).join("")===cur.y){
+  tone(S_OK);$("msg").innerHTML='<span class="ok">⭕ せいかい！</span>';
+  setTimeout(()=>{qi++;qi<5?load():finish()},1200);
+ }else{
+  miss++;tone(S_NG);$("msg").innerHTML='<span class="ng">もうちょっと</span>';
+  setTimeout(()=>{tiles.forEach(t=>t.used=false);pick=[];lock=false;$("msg").textContent="";draw()},1400);
+ }}
+function finish(){show("end");
+ setTimeout(()=>tone(S_WIN),100);$("eIcon").textContent="🎉🏆🎉";$("eMsg").textContent="おめでとう、つぎもがんばろう！"}
+$("start").onclick=()=>{tone([[660,.1]]);begin()};
+$("again").onclick=begin;
+$("back").onclick=()=>{if(lock||!pick.length)return;pick.pop().used=false;draw()};
+$("hint").onclick=()=>speak(cur.y.replace(/ゃ|ゅ|ょ/g,m=>m));
+$("fs").onclick=()=>{try{const d=document,e=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}}catch(x){}};
+</script></body></html>
