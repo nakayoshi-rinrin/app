@@ -1,0 +1,624 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>大きなかず</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+:root {
+  /* Layout: one centered column (max 640px). Start = bundles art, title, three level buttons, credit at bottom.
+     Quiz = header, question card, answer boxes, 5x2 digit keypad. Single bright look by choice (classroom screens). */
+  --bg: #e8f4fc;
+  --ink: #1b2a55;
+  --muted: #4b5b86;
+  --card: #ffffff;
+  --line: #c1d9ee;
+  --easy: #17824d;
+  --normal: #2266c7;
+  --hard: #c4375f;
+  --sun: #ffc52e;
+  --dot: #ff8a2b;
+  --ok: #17824d;
+  --ng: #c4375f;
+  --ok-bg: #dff5e8;
+  --ng-bg: #fde3ea;
+  --font: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
+
+.app { min-height: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; }
+.screen { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* shared buttons */
+.ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 48px; padding: 6px 16px;
+  background: var(--card); border: 3px solid var(--line); border-radius: 999px;
+  font-weight: 900; font-size: 16px;
+}
+.primary {
+  min-height: 60px; padding: 8px 28px; border: 0; border-radius: 18px;
+  background: var(--normal); color: #fff; font-weight: 900; font-size: 24px;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .25);
+}
+.primary:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0, 0, 0, .25); }
+.primary:disabled { background: #9db3d1; box-shadow: 0 5px 0 rgba(0, 0, 0, .12); cursor: default; }
+.primary.alt { background: var(--card); color: var(--ink); border: 3px solid var(--line); box-shadow: 0 5px 0 var(--line); }
+
+/* start */
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.hero { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 8px; }
+.art { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 10px; }
+h1 { margin: 0; text-align: center; display: flex; flex-direction: column; gap: 2px; text-wrap: balance; }
+h1 .t1 { font-size: clamp(48px, 15vw, 84px); font-weight: 900; line-height: 1.1; letter-spacing: .04em; }
+h1 .t2 { font-size: clamp(22px, 6vw, 32px); font-weight: 900; color: var(--normal); }
+.levels { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.lv {
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  min-height: 84px; padding: 10px 16px; border: 0; border-radius: 22px; color: #fff;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, .25);
+}
+.lv:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, .25); }
+.lv b { font-size: 30px; font-weight: 900; line-height: 1.3; }
+.lv small { font-size: 15px; font-weight: 700; opacity: .96; }
+.lv.easy { background: var(--easy); }
+.lv.normal { background: var(--normal); }
+.lv.hard { background: var(--hard); }
+.credit { margin: auto 0 0; padding-top: 24px; text-align: center; font-size: 20px; font-weight: 900; color: var(--muted); letter-spacing: .06em; }
+
+/* dots / bundles */
+.dotc { fill: var(--dot); }
+.bundle { max-width: 100%; height: auto; }
+
+/* quiz */
+.qbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.qmeta { display: flex; align-items: center; gap: 10px; }
+.chip { padding: 4px 16px; border-radius: 999px; color: #fff; font-weight: 900; font-size: 18px; }
+.chip.easy { background: var(--easy); }
+.chip.normal { background: var(--normal); }
+.chip.hard { background: var(--hard); }
+.qno { font-weight: 900; font-size: 18px; color: var(--muted); }
+.dots { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.dots li { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--line); background: var(--card); }
+.dots li.now { border-color: var(--ink); }
+.dots li.done { background: var(--sun); border-color: #d9a000; }
+
+.qcard { background: var(--card); border-radius: 24px; border: 3px solid var(--line); padding: 18px 16px; display: flex; flex-direction: column; gap: 16px; align-items: stretch; min-width: 0; }
+.prompt { margin: 0; text-align: center; font-size: 22px; font-weight: 900; text-wrap: balance; }
+.visual { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+/* かんたん: bundles on the left, loose dots on the right */
+.visual.row { flex-direction: row; align-items: stretch; justify-content: center; gap: 12px; }
+.visual.row .vgroup { width: auto; min-width: 0; flex: 1 1 0; }
+.visual.row .vgroup:first-child { flex: 1.4 1 0; }
+.visual.row .vgroup + .vgroup { border-left: 3px dashed var(--line); padding-left: 12px; }
+.visual.row .vitems { align-items: flex-start; align-content: flex-start; gap: 8px; }
+.visual.row .bundle { width: 72px; height: auto; }
+.visual.row .vitems svg:not(.bundle) { width: 28px; height: 28px; }
+@media (min-width: 520px) { .visual.row .bundle { width: 96px; } .visual.row .vitems svg:not(.bundle) { width: 34px; height: 34px; } }
+.vgroup { display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%; }
+.vlabel { font-size: 15px; color: var(--muted); font-weight: 900; }
+.vitems { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; min-height: 34px; align-items: center; }
+.none { color: var(--muted); font-size: 16px; }
+.bignum { font-size: 96px; font-weight: 900; line-height: 1.1; text-align: center; letter-spacing: .04em; }
+
+.slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; }
+.slot { display: flex; align-items: center; gap: 8px; white-space: nowrap; font-weight: 900; font-size: 18px; }
+.box {
+  width: 72px; height: 72px; border-radius: 16px; border: 4px dashed var(--line);
+  background: var(--card); font-size: 44px; font-weight: 900; line-height: 1; padding: 0;
+}
+.box.filled { border-style: solid; border-color: var(--line); background: #f1f7fd; }
+.box.active { border-style: solid; border-color: var(--normal); box-shadow: 0 0 0 4px rgba(34, 102, 199, .25); }
+.box.ok { border-style: solid; border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+.box.ng { border-style: solid; border-color: var(--ng); background: var(--ng-bg); color: var(--ng); }
+
+/* かんたん: 2x2 table, headers on top, digits below */
+.grid22 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: var(--ink); border: 3px solid var(--ink); border-radius: 16px; overflow: hidden; max-width: 360px; width: 100%; margin: 0 auto; }
+.grid22 .gh { background: #d6e8f8; text-align: center; padding: 10px 6px; font-size: 22px; font-weight: 900; }
+.grid22 .box { width: 100%; height: 96px; border: 0; border-radius: 0; background: #fff; font-size: 56px; }
+.grid22 .box.filled { background: #f1f7fd; }
+.grid22 .box.active { background: #fff; box-shadow: inset 0 0 0 5px var(--normal); }
+.grid22 .box.ok { background: var(--ok-bg); box-shadow: none; }
+.grid22 .box.ng { background: var(--ng-bg); box-shadow: none; }
+
+.pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 420px; width: 100%; margin: 0 auto; }
+.pad button {
+  min-height: 60px; border-radius: 16px; background: #fff; border: 3px solid var(--line);
+  font-size: 32px; font-weight: 900; box-shadow: 0 4px 0 var(--line); padding: 0;
+}
+.pad button:active { background: var(--sun); transform: translateY(2px); box-shadow: 0 2px 0 var(--line); }
+/* かんたん: 0-9 in a single row */
+.pad.one { grid-template-columns: repeat(10, 1fr); gap: 4px; max-width: none; }
+.pad.one button { min-height: 56px; font-size: 24px; border-radius: 10px; border-width: 2px; box-shadow: 0 3px 0 var(--line); }
+@media (min-width: 520px) { .pad.one { gap: 8px; } .pad.one button { min-height: 68px; font-size: 32px; border-radius: 14px; } }
+.pad.off button { opacity: .45; pointer-events: none; }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.choice {
+  min-height: 150px; border-radius: 22px; background: #fff; border: 4px solid var(--line);
+  font-size: clamp(56px, 18vw, 88px); font-weight: 900; box-shadow: 0 6px 0 var(--line); padding: 0;
+}
+.choice:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--line); }
+.choice.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.choice.ng { background: var(--ng-bg); border-color: var(--ng); color: var(--ng); }
+.choice:disabled { cursor: default; }
+
+.msg { min-height: 3.4em; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 22px; font-weight: 900; text-wrap: balance; }
+.msg.ok { color: var(--ok); }
+.msg.ng { color: var(--ng); font-size: 30px; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.actions .primary { min-width: 200px; }
+
+.shake { animation: shake .45s; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+
+/* result */
+.resCard { background: var(--card); border: 3px solid var(--line); border-radius: 24px; padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 24px; }
+.resTitle { margin: 0; font-size: clamp(34px, 10vw, 52px); font-weight: 900; text-align: center; text-wrap: balance; line-height: 1.2; }
+.resTitle.perfect { color: var(--hard); }
+.stars { display: flex; gap: 6px; }
+.stars svg { width: 52px; height: 52px; }
+.star { fill: #fff; stroke: var(--line); stroke-width: 1.5; stroke-linejoin: round; }
+.star.on { fill: var(--sun); stroke: #d9a000; }
+.resText { margin: 0; text-align: center; font-size: 22px; font-weight: 900; text-wrap: balance; }
+
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 999px; font-size: 16px; font-weight: 900; z-index: 60; max-width: calc(100% - 32px); text-align: center; }
+
+@media (min-width: 520px) {
+  .qcard { padding: 24px; }
+  .bignum { font-size: 120px; }
+}
+</style>
+
+<div class="app">
+  <section id="start" class="screen">
+    <div class="topbar">
+      <button id="fsBtn" class="ghost" type="button">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        <span id="fsLabel">ぜんがめん</span>
+      </button>
+      <button id="sndBtn" class="ghost" type="button" aria-pressed="true">おと：ON</button>
+    </div>
+    <div class="hero">
+      <div class="art" id="art" aria-hidden="true"></div>
+      <h1><span class="t1">大きなかず</span><span class="t2">～１００までのかず～</span></h1>
+    </div>
+    <div class="levels">
+      <button class="lv easy" type="button" data-level="easy"><b>かんたん</b><small>10のたばと ばらを かぞえよう</small></button>
+      <button class="lv normal" type="button" data-level="normal"><b>ふつう</b><small>10が いくつ、1が いくつ？</small></button>
+      <button class="lv hard" type="button" data-level="hard"><b>むずかしい</b><small>おおきい ほうは どっち？</small></button>
+    </div>
+    <p class="credit">きだっち＠明倫小</p>
+  </section>
+
+  <section id="quiz" class="screen" hidden>
+    <header class="qbar">
+      <button id="backBtn" class="ghost" type="button">← もどる</button>
+      <div class="qmeta"><span id="levelChip" class="chip"></span><span id="qno" class="qno"></span></div>
+      <ol id="dots" class="dots" aria-hidden="true"></ol>
+    </header>
+    <main class="qcard">
+      <p id="prompt" class="prompt"></p>
+      <div id="visual" class="visual"></div>
+      <div id="answerArea"></div>
+    </main>
+  </section>
+
+  <section id="result" class="screen" hidden>
+    <div class="resCard">
+      <p id="resTitle" class="resTitle"></p>
+      <div id="stars" class="stars" aria-hidden="true"></div>
+      <p id="resText" class="resText"></p>
+    </div>
+    <div class="actions">
+      <button id="againBtn" class="primary" type="button">もういちど</button>
+      <button id="homeBtn" class="primary alt" type="button">はじめにもどる</button>
+    </div>
+  </section>
+</div>
+<canvas id="confetti" hidden></canvas>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var LV = { easy: { name: 'かんたん' }, normal: { name: 'ふつう' }, hard: { name: 'むずかしい' } };
+  var TOTAL = 5;
+
+  /* ---------- helpers ---------- */
+  function rnd(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) { var j = rnd(0, i); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function bundleSVG() {
+    var c = '';
+    for (var r = 0; r < 2; r++) for (var i = 0; i < 5; i++) {
+      c += '<circle class="dotc" cx="' + (15 + i * 22.5) + '" cy="' + (r ? 45 : 19) + '" r="9"/>';
+    }
+    return '<svg class="bundle" viewBox="0 0 120 64" width="108" height="58" role="img" aria-label="10のたば">' +
+      '<rect x="2" y="2" width="116" height="60" rx="14" fill="#fff6d1" stroke="#e0a400" stroke-width="3"/>' + c + '</svg>';
+  }
+  function oneSVG() {
+    return '<svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true"><circle class="dotc" cx="15" cy="15" r="12"/></svg>';
+  }
+  function repeat(fn, n) { var s = ''; for (var i = 0; i < n; i++) s += fn(); return s; }
+
+  /* ---------- question generation ---------- */
+  function makeNumbers(n) {
+    var set = {}; var list = [];
+    var first = rnd(1, 9) * 10; set[first] = 1; list.push(first);
+    while (list.length < n) { var v = rnd(10, 99); if (!set[v]) { set[v] = 1; list.push(v); } }
+    return shuffle(list).map(function (v) { return { n: v }; });
+  }
+  function makePairs() {
+    var out = [], used = {};
+    function add(a, b) {
+      var key = Math.min(a, b) + '-' + Math.max(a, b);
+      if (a === b || used[key]) return false;
+      used[key] = 1; out.push(Math.random() < 0.5 ? { a: a, b: b } : { a: b, b: a }); return true;
+    }
+    var c = 0;
+    while (c < 2) { var t = rnd(1, 9); if (add(t * 10 + rnd(0, 9), t * 10 + rnd(0, 9))) c++; }
+    c = 0;
+    while (c < 3) { var a = rnd(10, 99), b = rnd(10, 99); if (Math.floor(a / 10) !== Math.floor(b / 10) && add(a, b)) c++; }
+    return shuffle(out);
+  }
+  function makeQuestions(level) { return level === 'hard' ? makePairs() : makeNumbers(TOTAL); }
+
+  /* ---------- sound ---------- */
+  var audioCtx = null, soundOn = true;
+  function ac() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; } }
+    if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+    return audioCtx;
+  }
+  var SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  function hz(name) {
+    var m = /^([A-G])(#?)(\d)$/.exec(name);
+    var midi = 12 * (+m[3] + 1) + SEMI[m[1]] + (m[2] ? 1 : 0);
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+  function playTrack(notes, bpm, o) {
+    if (!soundOn) return 0;
+    var c = ac(); if (!c) return 0;
+    o = o || {};
+    var type = o.type || 'triangle', vol = o.vol || 0.2, beat = 60 / bpm;
+    var t = c.currentTime + 0.04;
+    notes.forEach(function (nb) {
+      var n = nb[0], d = nb[1] * beat;
+      if (n) {
+        var arr = Array.isArray(n) ? n : [n];
+        arr.forEach(function (x) {
+          var os = c.createOscillator(), g = c.createGain();
+          var v = vol / Math.sqrt(arr.length);
+          os.type = type; os.frequency.value = hz(x);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(v, t + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(d * 0.96, 0.06));
+          os.connect(g); g.connect(c.destination);
+          os.start(t); os.stop(t + d + 0.05);
+        });
+      }
+      t += d;
+    });
+    return t - c.currentTime;
+  }
+  var JINGLES = [
+    [['C5', .5], ['E5', .5], ['G5', .5], ['C6', 1.5]],
+    [['E5', .5], ['G5', .5], ['E5', .5], ['A5', .5], ['G5', .5], ['C6', 1.5]],
+    [['G5', .5], ['E5', .5], ['G5', .5], ['C6', .5], ['B5', .5], ['D6', 1.5]]
+  ];
+  function playOk() {
+    var j = JINGLES[rnd(0, JINGLES.length - 1)];
+    playTrack(j, 160, { type: 'triangle', vol: 0.24 });
+    playTrack(j, 160, { type: 'square', vol: 0.04 });
+  }
+  var FAN_MEL = [
+    ['C5', .5], ['E5', .5], ['G5', .5], ['C6', .5], ['E6', 1], ['C6', 1],
+    ['B5', .5], ['G5', .5], ['D6', .5], ['B5', .5], ['G5', 2],
+    ['A5', .5], ['F5', .5], ['A5', .5], ['C6', .5], ['F6', 1], ['D6', 1],
+    ['G5', .5], ['B5', .5], ['D6', .5], ['G6', .5], ['G6', 2],
+    ['E6', .5], ['D6', .5], ['C6', .5], ['D6', .5], ['E6', 1], ['G6', 1],
+    ['F6', .5], ['E6', .5], ['D6', .5], ['E6', .5], ['F6', 1], ['A6', 1],
+    ['G6', .5], ['F6', .5], ['E6', .5], ['D6', .5], ['C6', .5], ['D6', .5], ['E6', .5], ['G5', .5],
+    [['C6', 'G5', 'E5'], 3.5], [null, .5]
+  ];
+  var FAN_BASS = [
+    ['C3', 2], ['G3', 2], ['G2', 2], ['D3', 2], ['F2', 2], ['C3', 2], ['G2', 2], ['D3', 2],
+    ['C3', 2], ['G3', 2], ['F2', 2], ['A2', 2], ['G2', 2], ['B2', 2], ['C3', 4]
+  ];
+  function playFanfare() {
+    playTrack(FAN_MEL, 150, { type: 'triangle', vol: 0.22 });
+    playTrack(FAN_MEL, 150, { type: 'square', vol: 0.05 });
+    playTrack(FAN_BASS, 150, { type: 'sine', vol: 0.24 });
+  }
+
+  /* ---------- confetti / petals ---------- */
+  var cf = null;
+  function stopConfetti() {
+    if (!cf) return;
+    cancelAnimationFrame(cf.raf); window.removeEventListener('resize', cf.fit);
+    var cv = $('#confetti'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); cv.hidden = true; cf = null;
+  }
+  function startConfetti() {
+    stopConfetti();
+    var cv = $('#confetti'), ctx = cv.getContext('2d'); cv.hidden = false;
+    var W = 0, H = 0;
+    function fit() {
+      var d = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    }
+    fit(); window.addEventListener('resize', fit);
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var rate = reduce ? 30 : 90, DUR = 11000;
+    var colors = ['#ff7fa8', '#ffb3cc', '#ffffff', '#ffd54a', '#7cc4ff', '#9be38b'];
+    var ps = [], acc = 0, t0 = performance.now(), last = t0;
+    function spawn() {
+      ps.push({
+        x: Math.random() * W, y: -20 - Math.random() * 60, vx: (Math.random() - 0.5) * 60, vy: 70 + Math.random() * 120,
+        s: 6 + Math.random() * 9, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 6, ph: Math.random() * 6.28,
+        c: colors[(Math.random() * colors.length) | 0], petal: Math.random() < 0.6
+      });
+    }
+    for (var i = 0; i < 80; i++) { spawn(); ps[i].y = Math.random() * H * 0.5 - H * 0.3; }
+    cf = { fit: fit, raf: 0 };
+    function frame(now) {
+      var dt = Math.min((now - last) / 1000, 0.05); last = now;
+      var el = now - t0;
+      if (el < DUR) { acc += dt * rate; while (acc >= 1) { spawn(); acc -= 1; } }
+      ctx.clearRect(0, 0, W, H);
+      for (var k = ps.length - 1; k >= 0; k--) {
+        var p = ps[k];
+        p.ph += dt * 3; p.x += (p.vx + Math.sin(p.ph) * 50) * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+        if (p.y > H + 30) { ps.splice(k, 1); continue; }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.scale(1, 0.4 + 0.6 * Math.abs(Math.cos(p.ph)));
+        ctx.fillStyle = p.c;
+        if (p.petal) { ctx.beginPath(); ctx.ellipse(0, 0, p.s * 0.5, p.s, 0, 0, 6.2832); ctx.fill(); }
+        else { ctx.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * 0.66); }
+        ctx.restore();
+      }
+      if (el > DUR && ps.length === 0) { stopConfetti(); return; }
+      cf.raf = requestAnimationFrame(frame);
+    }
+    cf.raf = requestAnimationFrame(frame);
+  }
+
+  /* ---------- screens ---------- */
+  var toastTimer = 0;
+  function toast(text) {
+    var t = $('#toast'); t.textContent = text; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+  function show(id) {
+    ['start', 'quiz', 'result'].forEach(function (s) { $('#' + s).hidden = (s !== id); });
+    window.scrollTo(0, 0);
+  }
+
+  /* start screen art */
+  $('#art').innerHTML = bundleSVG() + bundleSVG() + bundleSVG() + '<span style="display:flex;gap:6px;align-items:flex-end;padding-bottom:6px">' + repeat(oneSVG, 4) + '</span>';
+
+  /* fullscreen */
+  var fsBtn = $('#fsBtn');
+  fsBtn.addEventListener('click', function () {
+    var el = document.documentElement;
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        var ex = document.exitFullscreen || document.webkitExitFullscreen;
+        var r1 = ex.call(document); if (r1 && r1.catch) r1.catch(function () {});
+      } else {
+        var rq = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (!rq) throw new Error('unsupported');
+        var r2 = rq.call(el);
+        if (r2 && r2.catch) r2.catch(function () { toast('ここでは ぜんがめんに できません'); });
+      }
+    } catch (e) { toast('ここでは ぜんがめんに できません'); }
+  });
+  function fsChange() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    $('#fsLabel').textContent = on ? 'もとにもどす' : 'ぜんがめん';
+  }
+  document.addEventListener('fullscreenchange', fsChange);
+  document.addEventListener('webkitfullscreenchange', fsChange);
+
+  /* sound toggle */
+  $('#sndBtn').addEventListener('click', function () {
+    soundOn = !soundOn;
+    this.textContent = soundOn ? 'おと：ON' : 'おと：OFF';
+    this.setAttribute('aria-pressed', String(soundOn));
+    if (soundOn) ac();
+  });
+
+  /* ---------- quiz ---------- */
+  var S = null;
+
+  function startQuiz(level) {
+    ac(); stopConfetti();
+    S = { level: level, qs: makeQuestions(level), i: 0, clean: 0, done: false, missThis: false, lock: false, t: null, o: null, active: 't' };
+    show('quiz'); renderQ();
+  }
+  function updateDots() {
+    var h = '';
+    for (var i = 0; i < TOTAL; i++) {
+      var cls = (i < S.i || (i === S.i && S.done)) ? 'done' : '';
+      if (i === S.i) cls += ' now';
+      h += '<li class="' + cls + '"></li>';
+    }
+    $('#dots').innerHTML = h;
+  }
+  function tail(withSubmit) {
+    return '<div class="msg" id="msg" role="status" aria-live="polite"></div><div class="actions">' +
+      (withSubmit ? '<button id="submit" class="primary" type="button" disabled>こたえる</button>' : '') +
+      '<button id="next" class="primary" type="button" hidden>' + (S.i === TOTAL - 1 ? 'けっかを みる' : 'つぎへ') + '</button></div>';
+  }
+  function slotHTML(label, id, unit) {
+    return '<div class="slot"><span>' + label + '</span><button type="button" class="box" id="' + id + '" data-box="' + id.slice(-1).toLowerCase() + '" aria-label="' + label + '"></button><span>' + unit + '</span></div>';
+  }
+  function renderQ() {
+    var q = S.qs[S.i], lv = S.level;
+    S.done = false; S.missThis = false; S.lock = false; S.t = null; S.o = null; S.active = 't';
+    var chip = $('#levelChip'); chip.className = 'chip ' + lv; chip.textContent = LV[lv].name;
+    $('#qno').textContent = (S.i + 1) + ' / ' + TOTAL;
+    updateDots();
+    var prompt = $('#prompt'), vis = $('#visual'), area = $('#answerArea');
+    if (lv === 'hard') {
+      prompt.textContent = 'おおきい ほうを タップしよう';
+      vis.hidden = true; vis.innerHTML = '';
+      area.innerHTML = '<div class="choices">' + [q.a, q.b].map(function (v) {
+        return '<button type="button" class="choice" data-v="' + v + '">' + v + '</button>';
+      }).join('') + '</div>' + tail(false);
+      return;
+    }
+    vis.hidden = false;
+    vis.className = lv === 'easy' ? 'visual row' : 'visual';
+    var labels, slotsHtml;
+    if (lv === 'easy') {
+      var tens = Math.floor(q.n / 10), ones = q.n % 10;
+      prompt.textContent = 'かぞえて 十の位と 一の位を こたえよう';
+      vis.innerHTML =
+        '<div class="vgroup"><div class="vlabel">10のたば</div><div class="vitems">' + repeat(bundleSVG, tens) + '</div></div>' +
+        '<div class="vgroup"><div class="vlabel">ばら</div><div class="vitems">' + (ones ? repeat(oneSVG, ones) : '<span class="none">（なし）</span>') + '</div></div>';
+      slotsHtml = '<div class="grid22" id="slots"><div class="gh">十の位</div><div class="gh">一の位</div>' +
+        '<button type="button" class="box" id="boxT" data-box="t" aria-label="十の位"></button>' +
+        '<button type="button" class="box" id="boxO" data-box="o" aria-label="一の位"></button></div>';
+    } else {
+      prompt.textContent = '10の まとまりと 1は いくつずつ？';
+      vis.innerHTML = '<div class="bignum">' + q.n + '</div>';
+      labels = ['10のまとまりが', '1が', 'つ', 'つ'];
+      slotsHtml = '<div class="slots" id="slots">' + slotHTML(labels[0], 'boxT', labels[2]) + slotHTML(labels[1], 'boxO', labels[3]) + '</div>';
+    }
+    var pad = '';
+    for (var d = 0; d <= 9; d++) pad += '<button type="button" data-d="' + d + '" aria-label="' + d + '">' + d + '</button>';
+    area.innerHTML =
+      slotsHtml +
+      '<div class="pad' + (lv === 'easy' ? ' one' : '') + '" id="pad" style="margin-top:16px">' + pad + '</div>' + tail(true);
+    refreshBoxes();
+  }
+  function refreshBoxes() {
+    var bt = $('#boxT'), bo = $('#boxO'); if (!bt || !bo) return;
+    bt.textContent = S.t === null ? '' : S.t;
+    bo.textContent = S.o === null ? '' : S.o;
+    bt.classList.toggle('filled', S.t !== null); bo.classList.toggle('filled', S.o !== null);
+    bt.classList.toggle('active', S.active === 't' && !S.done); bo.classList.toggle('active', S.active === 'o' && !S.done);
+    var sb = $('#submit'); if (sb) sb.disabled = !(S.t !== null && S.o !== null) || S.done;
+  }
+  function press(d) {
+    if (!S || S.done || S.lock) return;
+    var m = $('#msg'); if (m) { m.textContent = ''; m.className = 'msg'; }
+    if (S.active === 't') { S.t = d; S.active = 'o'; } else { S.o = d; }
+    refreshBoxes();
+  }
+  function setMsg(text, cls) { var m = $('#msg'); m.textContent = text; m.className = 'msg ' + cls; }
+  function correct(text) {
+    S.done = true;
+    if (!S.missThis) S.clean++;
+    setMsg(text, 'ok'); playOk(); updateDots();
+    var sb = $('#submit'); if (sb) sb.hidden = true;
+    var nx = $('#next'); nx.hidden = false; nx.focus({ preventScroll: true });
+    var pad = $('#pad'); if (pad) pad.classList.add('off');
+    refreshBoxes();
+  }
+  function wrong(targets, onClear) {
+    S.missThis = true; S.lock = true;
+    setMsg('もうちょっと', 'ng');
+    targets.forEach(function (e) { e.classList.add('ng'); e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake'); });
+    setTimeout(function () {
+      targets.forEach(function (e) { e.classList.remove('ng'); e.classList.remove('shake'); });
+      S.lock = false; if (onClear) onClear();
+    }, 800);
+  }
+  function submit() {
+    if (!S || S.done || S.lock || S.t === null || S.o === null) return;
+    var q = S.qs[S.i], n = q.n;
+    if (S.t * 10 + S.o === n) {
+      var t = S.t, o = S.o;
+      $('#boxT').className = 'box ok'; $('#boxO').className = 'box ok';
+      correct(S.level === 'easy'
+        ? 'せいかい！ 十の位は ' + t + '、 一の位は ' + o + '。 ' + n + '！'
+        : 'せいかい！ ' + n + 'は 10が ' + t + 'つと 1が ' + o + 'つ！');
+    } else {
+      wrong([$('#boxT'), $('#boxO')], function () { S.t = null; S.o = null; S.active = 't'; refreshBoxes(); });
+    }
+  }
+  function pickChoice(btn) {
+    if (!S || S.done || S.lock) return;
+    var q = S.qs[S.i], v = +btn.dataset.v, big = Math.max(q.a, q.b);
+    if (v === big) {
+      btn.classList.add('ok');
+      document.querySelectorAll('.choice').forEach(function (b) { b.disabled = true; });
+      correct('せいかい！ ' + big + 'の ほうが おおきい！');
+    } else {
+      wrong([btn]);
+    }
+  }
+  function next() {
+    if (!S || !S.done) return;
+    if (S.i < TOTAL - 1) { S.i++; renderQ(); window.scrollTo(0, 0); } else { finish(); }
+  }
+
+  /* delegated clicks inside the answer area */
+  $('#answerArea').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.d !== undefined) press(+b.dataset.d);
+    else if (b.dataset.box) { if (!S.done && !S.lock) { S.active = b.dataset.box; refreshBoxes(); } }
+    else if (b.classList.contains('choice')) pickChoice(b);
+    else if (b.id === 'submit') submit();
+    else if (b.id === 'next') next();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!S || $('#quiz').hidden || S.level === 'hard') return;
+    if (/^[0-9]$/.test(e.key)) press(+e.key);
+  });
+
+  /* ---------- result ---------- */
+  function finish() {
+    show('result');
+    var perfect = S.clean === TOTAL;
+    var star = '<svg viewBox="0 0 24 24"><polygon class="star ' + 'ON' + '" points="12,2 15,9 22,9.5 16.5,14 18.5,21.5 12,17.5 5.5,21.5 7.5,14 2,9.5 9,9"/></svg>';
+    var st = '';
+    for (var i = 0; i < TOTAL; i++) st += star.replace('ON', i < S.clean ? 'on' : '');
+    $('#stars').innerHTML = st;
+    var title = $('#resTitle');
+    if (perfect) {
+      title.textContent = 'ぜんぶ せいかい！'; title.className = 'resTitle perfect';
+      $('#resText').textContent = 'すごい！ ' + TOTAL + 'もん ぜんぶ いっぱつで できたね！';
+      startConfetti(); playFanfare();
+    } else {
+      title.textContent = 'よく がんばったね！'; title.className = 'resTitle';
+      $('#resText').textContent = TOTAL + 'もんちゅう ' + S.clean + 'もん いっぱつで せいかい。 ぜんぶ いっぱつを めざそう！';
+      playOk();
+    }
+  }
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll('.lv').forEach(function (b) {
+    b.addEventListener('click', function () { startQuiz(b.dataset.level); });
+  });
+  $('#backBtn').addEventListener('click', function () { stopConfetti(); show('start'); });
+  $('#againBtn').addEventListener('click', function () { startQuiz(S.level); });
+  $('#homeBtn').addEventListener('click', function () { stopConfetti(); show('start'); });
+})();
+</script>
+
+</body></html>
