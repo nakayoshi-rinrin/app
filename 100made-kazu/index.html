@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><title>１００までのかず</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#fff7e0;--fg:#3b2a1a;--card:#fff;--ac:#ff8a3d;--ac2:#3aa6e0;--ok:#2fb36b;--ng:#e5484d;--blank:#ffe08a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d2433;--fg:#fff3d6;--card:#2b3550;--blank:#6b5a1e}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;text-align:center;user-select:none;-webkit-user-select:none}
+.scr{display:none;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:12px}
+.scr.on{display:flex}
+h1{font-size:clamp(40px,10vw,96px);margin:0;color:var(--ac)}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:18px;color:#fff;background:var(--ac);font-size:clamp(24px,5vw,40px);padding:.5em 1.2em;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.b2{background:var(--ac2)}
+#fs{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top,0px));font-size:20px;padding:.5em .8em;background:var(--ac2)}
+#credit{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;font-size:20px}
+#info{font-size:clamp(20px,4vw,30px)}
+#row{display:flex;gap:clamp(6px,2vw,18px);justify-content:center;max-width:100%}
+.c{width:clamp(52px,15vw,130px);height:clamp(64px,18vw,150px);background:var(--card);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:clamp(28px,8vw,72px);font-weight:bold;box-shadow:0 4px 0 rgba(0,0,0,.15);border:4px solid transparent}
+.c.bl{background:var(--blank);border-color:#d9a400;cursor:pointer}
+.c.act{border-color:var(--ac);outline:4px solid var(--ac)}
+#pad{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;width:min(96vw,760px)}
+#pad button{padding:.4em 0;font-size:clamp(20px,5vw,40px);background:var(--ac2);border-radius:12px}
+#pad .z{grid-column:5}
+#acts{display:flex;gap:12px}
+#msg{height:1.4em;font-size:clamp(28px,6vw,52px);font-weight:bold}
+#cv{position:fixed;inset:0;pointer-events:none;z-index:9}
+</style></head><body>
+<div id="s0" class="scr on">
+ <button id="fs">⛶ ぜんがめん</button>
+ <h1>１００までのかず</h1>
+ <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
+  <button onclick="start('easy')">かんたん</button>
+  <button class="b2" onclick="start('hard')">むずかしい</button>
+ </div>
+ <div id="credit">きだっち＠明倫小</div>
+</div>
+<div id="s1" class="scr">
+ <div id="info"></div>
+ <div id="row"></div>
+ <div id="msg"></div>
+ <div id="pad"></div>
+ <div id="acts"><button class="b2" onclick="del()">けす</button><button style="background:var(--ok)" onclick="check()">こたえあわせ</button></div>
+</div>
+<div id="s2" class="scr"><h1 id="endt"></h1><div id="endm" style="font-size:clamp(24px,5vw,44px)"></div><button onclick="show('s0')">もういちど</button></div>
+<canvas id="cv"></canvas>
+<script>
+const $=id=>document.getElementById(id);
+let AC;
+function ac(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}return AC}
+function play(notes,tempo=.16,type="triangle"){const a=ac();if(!a)return;let t=a.currentTime+.02;notes.forEach(n=>{if(n){const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=440*Math.pow(2,(n-69)/12);g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+tempo*.95);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+tempo)}t+=tempo})}
+const okSnd=()=>play([72,76,79,84],.14);
+const ngSnd=()=>play([60,57],.22,"sine");
+const fanfare=()=>play([72,72,72,72,68,70,72,0,70,72,76,79,79,0,84,83,81,79,76,77,79,84,84,86,88,91],.17,"square");
+function fsToggle(){const d=document.documentElement;if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else{(d.requestFullscreen||d.webkitRequestFullscreen||(()=>{})).call(d)}}
+$("fs").onclick=fsToggle;
+function show(i){["s0","s1","s2"].forEach(x=>$(x).classList.toggle("on",x==i));stopConf()}
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a}
+let qs,qi,miss,B,act,locked;
+function mk(step){let s;if(step==5)s=5*R(0,(100-20)/5);else if(step==10)s=10*R(0,6);else s=R(1,100-4*step);if(s==0&&step!=1)s=step;return Array.from({length:5},(_,i)=>s+i*step)}
+function start(m){ac();qs=(m=="easy"?[1,1,1,1,1]:shuffle([1,1,2,5,10])).map(mk);qi=0;miss=0;show("s1");nextQ()}
+function nextQ(){const q=qs[qi];const pos=shuffle([0,1,2,3,4]).slice(0,2).sort();B=pos.map(p=>({p,a:String(q[p]),v:""}));act=0;locked=false;$("msg").textContent="";$("info").textContent=`だい ${qi+1} もん / ${qs.length}　□に はいる かずは？`;draw()}
+function draw(){const q=qs[qi];$("row").innerHTML=q.map((n,i)=>{const bi=B.findIndex(b=>b.p==i);if(bi<0)return`<div class="c">${n}</div>`;return`<div class="c bl ${bi==act?"act":""}" onclick="act=${bi};draw()">${B[bi].v}</div>`}).join("")}
+$("pad").innerHTML=[1,2,3,4,5,6,7,8,9,0].map(n=>`<button ${n==0?'class="z" ':''}onclick="press(${n})">${n}</button>`).join("");
+function press(n){if(locked)return;ac();const b=B[act];if(b.v.length<b.a.length)b.v+=n;if(b.v.length==b.a.length){const o=B.findIndex(x=>x.v.length<x.a.length);if(o>=0)act=o}draw()}
+function del(){if(locked)return;B[act].v="";draw()}
+function check(){if(locked)return;const good=B.every(b=>b.v==b.a);if(good){locked=true;$("msg").style.color="var(--ok)";$("msg").textContent="せいかい！";okSnd();setTimeout(()=>{qi++;if(qi<qs.length)nextQ();else finish()},1500)}else{miss++;$("msg").style.color="var(--ng)";$("msg").textContent="もうちょっと";ngSnd();B.forEach(b=>b.v="");act=0;draw()}}
+function finish(){show("s2");if(miss==0){$("endt").textContent="ぜんぶ せいかい！すごい！";$("endm").textContent="";fanfare();confetti()}else{$("endt").textContent="よくできました！";$("endm").textContent=`まちがい ${miss}かい　ぜんぶ＆ちゃんと できたね`;okSnd()}}
+let cf=null;
+function confetti(){const c=$("cv"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;const cols=["#ff4d6d","#ffb703","#3aa6e0","#2fb36b","#c77dff","#ff8a3d"];const P=Array.from({length:180},()=>({x:Math.random()*c.width,y:-Math.random()*c.height,w:8+Math.random()*10,h:6+Math.random()*8,vy:2+Math.random()*4,vx:-1.5+Math.random()*3,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[R(0,5)]}));const t0=Date.now();(function f(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.y+=p.vy;p.x+=p.vx+Math.sin(p.y/30);p.r+=p.vr;if(p.y>c.height)p.y=-10;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});if(Date.now()-t0<12000)cf=requestAnimationFrame(f);else stopConf()})()}
+function stopConf(){cancelAnimationFrame(cf);const c=$("cv");c.getContext("2d").clearRect(0,0,c.width,c.height)}
+</script></body></html>
