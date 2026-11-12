@@ -1,0 +1,736 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>がい数</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: 算数ノートのような方眼紙の上に、スタート(全画面ボタン左上・タイトル・モード4つ・クレジット中央下) → 問題(ばんごう丸・問題カード・数字パッド。広い画面では左右2列) → けっか */
+:root{
+  --bg:#EDF4FA; --grid:#D9E6F2; --paper:#FFFFFF; --paper2:#F4F8FC;
+  --ink:#1B2B48; --ink-soft:#546682; --line:#C5D4E6;
+  --green:#14935A; --green-deep:#0B6A41; --green-soft:#DDF4E8; --green-ink:#0B6B41;
+  --blue:#2B6FDB; --blue-deep:#1A4DA3; --blue-soft:#DCE9FD;
+  --orange:#D9590B; --orange-deep:#A2400A; --orange-soft:#FFE6D3; --orange-ink:#A2400A;
+  --berry:#CF3566; --berry-deep:#962249;
+  --mark:#FFE98A;
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A2E; --grid:#162540; --paper:#16253F; --paper2:#1B2D4B;
+    --ink:#EAF1FF; --ink-soft:#9DB0D0; --line:#2D4266;
+    --green-soft:#12392A; --green-ink:#7FE5B3;
+    --blue-soft:#17315C; --orange-soft:#47260F; --orange-ink:#FFB27E;
+    --mark:#5A4A10; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A2E; --grid:#162540; --paper:#16253F; --paper2:#1B2D4B;
+  --ink:#EAF1FF; --ink-soft:#9DB0D0; --line:#2D4266;
+  --green-soft:#12392A; --green-ink:#7FE5B3;
+  --blue-soft:#17315C; --orange-soft:#47260F; --orange-ink:#FFB27E;
+  --mark:#5A4A10; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background-color:var(--bg); color:var(--ink);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  font-family:var(--font); font-weight:500; font-size:16px; line-height:1.5;
+  padding-block:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+#app{min-height:100%;display:flex;flex-direction:column}
+.screen{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* ---------- start ---------- */
+.topbar{display:flex;justify-content:flex-start}
+.fs{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--paper);border:2px solid var(--line);box-shadow:0 3px 0 var(--line);font-weight:700;font-size:15px}
+.fs:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.fs svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.center{margin-block:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding-block:12px;width:100%}
+.title{margin:0;font-weight:900;font-size:clamp(84px,26vw,168px);line-height:1;letter-spacing:.02em;text-shadow:5px 5px 0 var(--mark)}
+.title .k{color:var(--orange)}
+.nline{width:min(100%,420px);height:auto;display:block}
+.nline text{font-family:inherit;font-size:14px;font-weight:700;fill:var(--ink)}
+.lead{margin:0;font-size:18px;font-weight:700;color:var(--ink-soft)}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:min(100%,560px);padding-bottom:6px}
+.mode{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:14px 16px 16px;min-height:108px;border-radius:18px;color:#fff;background:var(--c);box-shadow:0 6px 0 var(--cd);text-align:left;position:relative;transition:transform .08s,box-shadow .08s}
+.mode:active{transform:translateY(4px);box-shadow:0 2px 0 var(--cd)}
+.mode .name{font-size:clamp(22px,6vw,30px);font-weight:900;line-height:1.15}
+.mode .desc{font-size:14px;font-weight:700}
+.mode .stars{font-size:13px;letter-spacing:.18em;margin-top:auto}
+.mode .done{position:absolute;right:10px;top:10px;background:#fff;color:var(--cd);font-size:12px;font-weight:900;padding:1px 9px;border-radius:99px}
+.m-easy{--c:var(--green);--cd:var(--green-deep)}
+.m-normal{--c:var(--blue);--cd:var(--blue-deep)}
+.m-hard{--c:var(--orange);--cd:var(--orange-deep)}
+.m-extreme{--c:var(--berry);--cd:var(--berry-deep)}
+.credit{text-align:center;font-weight:700;font-size:17px;color:var(--ink-soft);padding-top:8px;letter-spacing:.06em}
+
+/* ---------- game ---------- */
+.game{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:100%;max-width:1040px;margin:0 auto}
+.gh{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.back{padding:8px 14px;border-radius:12px;background:var(--paper);border:2px solid var(--line);font-weight:700;font-size:15px}
+.chip{padding:4px 14px;border-radius:99px;color:#fff;font-weight:900;font-size:16px;background:var(--c,var(--blue))}
+.prog{display:flex;gap:8px;margin-left:auto}
+.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:16px;border:3px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dot.cur{border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.dot.ok{background:var(--green);border-color:var(--green);color:#fff}
+.dot.ng{background:var(--orange);border-color:var(--orange);color:#fff}
+.left,.right{display:flex;flex-direction:column;gap:16px;min-width:0}
+.qcard{background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 5px 0 var(--line)}
+.qno{font-weight:900;font-size:15px;color:var(--ink-soft);letter-spacing:.08em}
+.expr{margin:0;font-size:clamp(30px,8.6vw,50px);font-weight:900;text-align:center;font-variant-numeric:tabular-nums;line-height:1.25}
+.expr .op{color:var(--orange);padding-inline:.15em}
+.story{margin:0;font-size:clamp(18px,4.6vw,23px);font-weight:700;line-height:1.8}
+.qinst{margin:0;font-weight:700;font-size:clamp(16px,4vw,19px);line-height:1.7}
+.pl{background:linear-gradient(transparent 58%,var(--mark) 58%);font-weight:900;padding-inline:2px}
+.legend{margin:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;font-weight:700;color:var(--ink-soft)}
+.legend .sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.sw.blue{background:var(--blue)}.sw.orange{background:var(--orange)}
+.pv{display:flex;gap:8px;justify-content:center}
+.cell{display:flex;flex-direction:column;align-items:center;gap:5px}
+.cell .lab{font-size:14px;font-weight:900;color:var(--ink-soft);min-height:22px;padding:0 10px;border-radius:99px;line-height:22px}
+.cell .box{width:clamp(54px,16vw,84px);height:clamp(66px,19vw,100px);border-radius:12px;border:3px solid var(--line);background:var(--paper2);display:grid;place-items:center;font-size:clamp(34px,10vw,58px);font-weight:900;font-variant-numeric:tabular-nums}
+.cell.look .box{border-color:var(--blue);background:var(--blue-soft)}
+.cell.look .lab{background:var(--blue);color:#fff}
+.cell.target .lab{background:var(--orange);color:#fff}
+.arrow{align-self:center;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:18px solid var(--orange)}
+.answer{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.answer .cap{margin:0;text-align:center;font-weight:900;font-size:15px;color:var(--ink-soft);letter-spacing:.08em}
+.answer .cell{cursor:pointer}
+.answer .cell .box{background:var(--paper)}
+.answer .cell.on .box{border-color:var(--orange);box-shadow:0 0 0 4px var(--orange-soft)}
+.free{display:flex;align-items:baseline;justify-content:flex-end;gap:10px;min-height:88px;padding:12px 20px;border:3px solid var(--orange);border-radius:16px;background:var(--paper);box-shadow:0 0 0 4px var(--orange-soft)}
+.free .v{font-size:clamp(36px,10vw,58px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1.2}
+.free .v:empty::before{content:"こたえを いれてね";font-size:18px;font-weight:500;color:var(--ink-soft)}
+.free .v:not(:empty)::after{content:"";display:inline-block;width:3px;height:.85em;margin-left:5px;vertical-align:-.08em;background:var(--orange);animation:blink 1s steps(1) infinite}
+.free .u{font-size:24px;font-weight:700}
+@keyframes blink{50%{opacity:0}}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;max-width:420px;margin:0 auto}
+.key{height:clamp(56px,9.5vh,72px);border-radius:14px;background:var(--paper);border:2px solid var(--line);box-shadow:0 4px 0 var(--line);font-size:30px;font-weight:900;font-variant-numeric:tabular-nums}
+.key:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.key.del{font-size:19px;background:var(--orange-soft);border-color:var(--orange);box-shadow:0 4px 0 var(--orange)}
+.key.go{font-size:20px;background:var(--green);color:#fff;border-color:var(--green-deep);box-shadow:0 4px 0 var(--green-deep)}
+.key:disabled{opacity:.4;cursor:default}
+.pad.ops{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pad.ops .key{height:clamp(50px,8.4vh,64px);font-size:28px}
+.pad.ops .key.go{grid-column:1/-1;font-size:20px}
+.pad.ops .key.del{font-size:17px}
+.key.opk{background:var(--blue-soft);border-color:var(--blue);box-shadow:0 4px 0 var(--blue);color:var(--blue-deep)}
+.key.eq{background:var(--mark);box-shadow:0 4px 0 var(--line)}
+.eqrow{display:flex;align-items:center;gap:8px}
+.eqs{font-size:34px;font-weight:900;color:var(--orange);flex:none}
+.un{font-size:24px;font-weight:700;flex:none}
+.slot{flex:1;min-width:0;min-height:70px;display:flex;align-items:center;justify-content:center;padding:6px 8px;border:3px solid var(--line);border-radius:14px;background:var(--paper);font-size:clamp(26px,7vw,40px);font-weight:900;font-variant-numeric:tabular-nums}
+.slot.opslot{flex:none;width:64px;color:var(--orange)}
+.slot.on{border-color:var(--orange);box-shadow:0 0 0 4px var(--orange-soft)}
+.slot .sv:empty::before{content:attr(data-ph);font-size:15px;font-weight:500;color:var(--ink-soft)}
+.slot.on:not(.opslot) .sv:not(:empty)::after{content:"";display:inline-block;width:3px;height:.85em;margin-left:4px;vertical-align:-.08em;background:var(--orange);animation:blink 1s steps(1) infinite}
+.fb{border-radius:20px;padding:18px 20px;border:3px solid;display:flex;flex-direction:column;gap:12px;width:100%;max-width:520px;margin:0 auto}
+.fb.ok{background:var(--green-soft);border-color:var(--green)}
+.fb.ng{background:var(--orange-soft);border-color:var(--orange)}
+.fb .big{margin:0;font-size:clamp(34px,9vw,46px);font-weight:900;line-height:1.2}
+.fb.ok .big{color:var(--green-ink)}.fb.ng .big{color:var(--orange-ink)}
+.fb .ans{margin:0;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}
+.fb .why{margin:0;font-size:16px;font-weight:700;line-height:1.8}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:14px 22px;border-radius:16px;font-weight:900;font-size:20px;border:2px solid var(--line);background:var(--paper);box-shadow:0 5px 0 var(--line);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line)}
+.btn.primary{background:var(--green);color:#fff;border-color:var(--green-deep);box-shadow:0 5px 0 var(--green-deep)}
+.btn.primary:active{box-shadow:0 1px 0 var(--green-deep)}
+
+/* ---------- result ---------- */
+.resbox{margin:auto;width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-block:8px}
+.rtag{margin:0;font-weight:900;color:var(--ink-soft);letter-spacing:.1em}
+.rtitle{margin:0;font-size:clamp(34px,9.5vw,58px);font-weight:900;line-height:1.2;text-shadow:4px 4px 0 var(--mark)}
+.rscore{margin:0;font-size:clamp(44px,12vw,72px);font-weight:900;color:var(--orange);font-variant-numeric:tabular-nums;line-height:1.1}
+.rlist{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:8px;text-align:left}
+.rlist li{display:flex;align-items:center;gap:12px;background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 14px;min-width:0}
+.rlist .mk{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900}
+.rlist .ok .mk{background:var(--green)}.rlist .ng .mk{background:var(--orange)}
+.rlist .sm{flex:1;min-width:0;font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rlist .an{flex:none;font-weight:900;font-variant-numeric:tabular-nums}
+.ract{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:6px}
+
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:700;z-index:60;max-width:calc(100% - 32px);text-align:center}
+
+@media (min-width:860px){
+  .game{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;column-gap:28px}
+  .gh{grid-column:1/-1}
+  .right{padding-top:4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .free .v:not(:empty)::after{animation:none}
+  .mode,.key,.btn,.fs{transition:none}
+}
+</style>
+
+<div id="app">
+  <section id="start" class="screen">
+    <div class="topbar">
+      <button id="fs" class="fs" type="button" aria-label="全画面表示">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        <span id="fsLabel">ぜんがめん</span>
+      </button>
+    </div>
+    <div class="center">
+      <h1 class="title"><span>がい</span><span class="k">数</span></h1>
+      <svg class="nline" viewBox="0 0 420 100" role="img" aria-label="4,637を十の位までのがい数にすると4,640">
+        <line x1="30" y1="66" x2="390" y2="66" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+        <g stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round">
+          <line x1="66" y1="61" x2="66" y2="71"/><line x1="102" y1="61" x2="102" y2="71"/><line x1="138" y1="61" x2="138" y2="71"/>
+          <line x1="174" y1="61" x2="174" y2="71"/><line x1="246" y1="61" x2="246" y2="71"/><line x1="282" y1="61" x2="282" y2="71"/>
+          <line x1="318" y1="61" x2="318" y2="71"/><line x1="354" y1="61" x2="354" y2="71"/>
+        </g>
+        <g stroke="var(--ink)" stroke-width="3" stroke-linecap="round">
+          <line x1="30" y1="55" x2="30" y2="77"/><line x1="210" y1="55" x2="210" y2="77"/><line x1="390" y1="55" x2="390" y2="77"/>
+        </g>
+        <text x="30" y="96" text-anchor="middle">4,630</text>
+        <text x="210" y="96" text-anchor="middle">4,635</text>
+        <text x="390" y="96" text-anchor="middle">4,640</text>
+        <circle cx="282" cy="66" r="9" fill="var(--orange)"/>
+        <text x="270" y="30" text-anchor="middle" style="fill:var(--orange);font-size:16px;font-weight:900">4,637</text>
+        <path d="M292 40 Q340 6 386 44" fill="none" stroke="var(--orange)" stroke-width="3.5" stroke-linecap="round"/>
+        <polygon points="388,50 377,42 391,36" fill="var(--orange)"/>
+      </svg>
+      <p class="lead">モードを えらんでね（5もん）</p>
+      <div class="modes">
+        <button class="mode m-easy" type="button" data-mode="easy"><span class="name">かんたん</span><span class="desc">四捨五入で がい数</span><span class="stars" aria-hidden="true">★☆☆☆</span></button>
+        <button class="mode m-normal" type="button" data-mode="normal"><span class="name">ふつう</span><span class="desc">たし算・ひき算</span><span class="stars" aria-hidden="true">★★☆☆</span></button>
+        <button class="mode m-hard" type="button" data-mode="hard"><span class="name">むずかしい</span><span class="desc">かけ算・わり算</span><span class="stars" aria-hidden="true">★★★☆</span></button>
+        <button class="mode m-extreme" type="button" data-mode="extreme"><span class="name">げきむず</span><span class="desc">文章問題</span><span class="stars" aria-hidden="true">★★★★</span></button>
+      </div>
+    </div>
+    <footer class="credit">きだっち＠明倫小</footer>
+  </section>
+
+  <section id="game" class="screen" hidden>
+    <div class="game">
+      <header class="gh">
+        <button id="back" class="back" type="button">‹ もどる</button>
+        <span id="modeChip" class="chip"></span>
+        <div class="prog" id="prog"></div>
+      </header>
+      <div class="left">
+        <div class="qcard">
+          <div class="qno" id="qno"></div>
+          <div id="qbody"></div>
+          <p class="qinst" id="qinst"></p>
+          <p class="legend" id="legend" hidden></p>
+        </div>
+        <div id="answer" class="answer" aria-live="polite"></div>
+      </div>
+      <div class="right">
+        <div id="pad" class="pad"></div>
+        <div id="fb" class="fb" hidden aria-live="assertive">
+          <p class="big" id="fbBig"></p>
+          <p class="ans" id="fbAns"></p>
+          <p class="why" id="fbWhy"></p>
+          <button id="next" class="btn primary" type="button">つぎへ</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" class="screen" hidden>
+    <div class="resbox">
+      <p class="rtag" id="rtag"></p>
+      <h2 class="rtitle" id="rtitle"></h2>
+      <p class="rscore" id="rscore"></p>
+      <ol class="rlist" id="rlist"></ol>
+      <div class="ract">
+        <button id="again" class="btn primary" type="button">もういちど</button>
+        <button id="toStart" class="btn" type="button">モードを えらぶ</button>
+      </div>
+    </div>
+  </section>
+</div>
+<canvas id="confetti" hidden></canvas>
+<div id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+//#GEN-START
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[rnd(0,a.length-1)];
+const fmt=n=>Number(n).toLocaleString('en-US');
+const P=k=>Math.pow(10,k);
+const roundK=(n,k)=>Math.floor((n+5*P(k-1))/P(k))*P(k);
+const LAB=['一','十','百','千','万'];
+const placeName=k=>LAB[k];
+const lowerName=k=>LAB[k-1];
+const digitAt=(n,p)=>Math.floor(n/P(p))%10;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+function near(R,k){let o;do{o=rnd(-5*P(k-1),5*P(k-1)-1);}while(o===0);return R+o;}
+const instr=k=>`四捨五入して、<b class="pl">${placeName(k)}の位</b>までのがい数にして、答えを求めましょう。`;
+const instr2=k=>`それぞれ四捨五入して、<b class="pl">${placeName(k)}の位</b>までのがい数にしてから、計算しましょう。`;
+const roundNote=(n,r)=>`${fmt(n)} → ${fmt(r)}`;
+const zeroNote=(x,y,k,ans)=>`${x} ${y.op} ${y.v} ＝ ${y.r}。0を${k}こつけて ${fmt(ans)}`;
+
+function genEasy(){
+  const k=pick([1,1,1,1,2,2,2,3]);
+  const len=k===3?4:pick([3,4]);
+  let n,r;
+  do{n=rnd(P(len-1),P(len)-1);r=roundK(n,k);}while(n%P(k)===0||String(r).length!==len);
+  const d=digitAt(n,k-1);
+  return {kind:'boxes',n,k,len,answer:r,unit:'',inst:instr(k).replace('答えを求めましょう','答えましょう'),
+    explain:`${lowerName(k)}の位の数字は <b>${d}</b> だね。${d>=5?'5以上なので切り上げて':'4以下なので切り捨てて'}、${roundNote(n,r)}`,
+    short:`${fmt(n)} → ${placeName(k)}の位`};
+}
+function genNormal(op){
+  const k=pick([1,2,2,3]);
+  const [lo,hi]=k===1?[100,999]:k===2?[1000,9999]:pick([[2000,9999],[10000,89999]]);
+  let a,b,ra,rb;
+  do{
+    a=rnd(lo,hi);b=rnd(lo,hi);
+    if(op==='-'&&a<b){const t=a;a=b;b=t;}
+    ra=roundK(a,k);rb=roundK(b,k);
+  }while(a%P(k)===0||b%P(k)===0||(op==='-'&&ra-rb<2*P(k)));
+  const ans=op==='+'?ra+rb:ra-rb;
+  const sym=op==='+'?'＋':'−';
+  return {kind:'free',expr:{a:ra,op:sym,b:rb},html:`<p class="expr">${fmt(a)} <span class="op">${sym}</span> ${fmt(b)}</p>`,inst:instr2(k),answer:ans,unit:'',
+    explain:`${roundNote(a,ra)}、${roundNote(b,rb)}。<br>${fmt(ra)} ${sym} ${fmt(rb)} ＝ <b>${fmt(ans)}</b>`,
+    short:`${fmt(a)} ${sym} ${fmt(b)}`};
+}
+// かけ算A: 大きい数をがい数にして、1けたをかける
+function mulA(){
+  const k=pick([1,2,2,3]);const lead=rnd(2,9),b=rnd(2,9);
+  const R=lead*P(k);const n=near(R,k);const ans=R*b;
+  return {k,n,R,lead,b,ans};
+}
+// かけ算B: 2けた×2けた(十の位まで)
+function mulB(){
+  let la,lb,a,b;
+  do{la=rnd(2,9);lb=rnd(2,9);a=near(la*10,1);b=near(lb*10,1);}while(false);
+  return {la,lb,a,b,ra:la*10,rb:lb*10,ans:la*lb*100};
+}
+function divP(ks){
+  const k=pick(ks);const d=rnd(2,9),q=rnd(2,9);
+  const R=d*q*P(k);const n=near(R,k);
+  return {k,d,q,R,n,ans:q*P(k)};
+}
+function genHard(type){
+  if(type==='mulA'){
+    const m=mulA();
+    return {kind:'free',expr:{a:m.R,op:'×',b:m.b},html:`<p class="expr">${fmt(m.n)} <span class="op">×</span> ${m.b}</p>`,inst:instr(m.k),answer:m.ans,unit:'',
+      explain:`${roundNote(m.n,m.R)}。<br>九九で ${m.lead} × ${m.b} ＝ ${m.lead*m.b}、0を${m.k}こつけて <b>${fmt(m.ans)}</b>`,
+      short:`${fmt(m.n)} × ${m.b}`};
+  }
+  if(type==='mulB'){
+    const m=mulB();
+    return {kind:'free',expr:{a:m.ra,op:'×',b:m.rb},html:`<p class="expr">${m.a} <span class="op">×</span> ${m.b}</p>`,inst:instr2(1),answer:m.ans,unit:'',
+      explain:`${roundNote(m.a,m.ra)}、${roundNote(m.b,m.rb)}。<br>九九で ${m.la} × ${m.lb} ＝ ${m.la*m.lb}、0を2こつけて <b>${fmt(m.ans)}</b>`,
+      short:`${m.a} × ${m.b}`};
+  }
+  const m=divP([1,2,2,3]);
+  return {kind:'free',expr:{a:m.R,op:'÷',b:m.d},html:`<p class="expr">${fmt(m.n)} <span class="op">÷</span> ${m.d}</p>`,inst:instr(m.k),answer:m.ans,unit:'',
+    explain:`${roundNote(m.n,m.R)}。<br>九九で ${m.d*m.q} ÷ ${m.d} ＝ ${m.q}、0を${m.k}こつけて <b>${fmt(m.ans)}</b>`,
+    short:`${fmt(m.n)} ÷ ${m.d}`};
+}
+
+const W_ADD=[
+  {f:(a,b)=>`どうぶつ園に、土曜日は${fmt(a)}人、日曜日は${fmt(b)}人が来ました。2日間で、およそ何人が来ましたか。`,u:'人',lo:1200,hi:9800,ks:[2,3]},
+  {f:(a,b)=>`本屋さんで、きのうは本が${fmt(a)}さつ、今日は${fmt(b)}さつ売れました。2日間で、およそ何さつ売れましたか。`,u:'さつ',lo:300,hi:990,ks:[1,2]},
+  {f:(a,b)=>`遠足で、午前中に${fmt(a)}m、午後に${fmt(b)}m歩きました。あわせて、およそ何m歩きましたか。`,u:'m',lo:1200,hi:4800,ks:[2,3]},
+  {f:(a,b)=>`ある町には、男の人が${fmt(a)}人、女の人が${fmt(b)}人います。あわせて、およそ何人ですか。`,u:'人',lo:10000,hi:89000,ks:[2,3]},
+  {f:(a,b)=>`ゲームソフトが${fmt(a)}円、ゲーム機が${fmt(b)}円です。あわせて、およそ何円ですか。`,u:'円',lo:1200,hi:9800,ks:[2]}
+];
+const W_SUB=[
+  {f:(a,b)=>`図書室に本が${fmt(a)}さつあります。そのうち${fmt(b)}さつが貸し出されています。のこりは、およそ何さつですか。`,u:'さつ',lo:300,hi:990,ks:[1,2]},
+  {f:(a,b)=>`水そうに水が${fmt(a)}L入っています。${fmt(b)}L使うと、のこりは、およそ何Lですか。`,u:'L',lo:1200,hi:9800,ks:[2,3]},
+  {f:(a,b)=>`ある駅の1日の利用者は${fmt(a)}人で、そのうち子どもは${fmt(b)}人でした。大人は、およそ何人ですか。`,u:'人',lo:2000,hi:9900,ks:[2,3]},
+  {f:(a,b)=>`高さ${fmt(a)}mの山があります。${fmt(b)}mまで登りました。山ちょうまで、およそ何mのこっていますか。`,u:'m',lo:1000,hi:3800,ks:[2]}
+];
+const W_MA=[
+  {f:(a,b)=>`1ふくろに${fmt(a)}こ入ったあめが、${b}ふくろあります。あめは、ぜんぶでおよそ何こですか。`,u:'こ',ks:[1,2]},
+  {f:(a,b)=>`1こ${fmt(a)}円のおかしを、${b}こ買います。代金は、およそ何円ですか。`,u:'円',ks:[1,2]},
+  {f:(a,b)=>`1周${fmt(a)}mのコースを、${b}周走ります。およそ何m走りますか。`,u:'m',ks:[2,3]},
+  {f:(a,b)=>`1日に${fmt(a)}人が来るお店があります。${b}日間では、およそ何人が来ますか。`,u:'人',ks:[2,3]}
+];
+const W_MB=[
+  {f:(a,b)=>`1こ${a}円のけしゴムを、${b}こ買います。代金は、およそ何円ですか。`,u:'円'},
+  {f:(a,b)=>`1はこに${a}こ入ったみかんが、${b}はこあります。みかんは、ぜんぶでおよそ何こですか。`,u:'こ'},
+  {f:(a,b)=>`1まい${a}円の画用紙を、${b}まい買います。代金は、およそ何円ですか。`,u:'円'}
+];
+const W_DIV=[
+  {f:(a,d)=>`色紙が${fmt(a)}まいあります。${d}人で同じ数ずつ分けます。1人分は、およそ何まいですか。`,u:'まい',ks:[1,2,3]},
+  {f:(a,d)=>`${fmt(a)}cmのひもを、${d}本に同じ長さで切ります。1本は、およそ何cmですか。`,u:'cm',ks:[1,2]},
+  {f:(a,d)=>`${fmt(a)}このみかんを、${d}つのかごに同じ数ずつ入れます。1かごは、およそ何こですか。`,u:'こ',ks:[2,3]},
+  {f:(a,d)=>`${fmt(a)}円を、${d}人で同じ金がくずつ出し合います。1人分は、およそ何円ですか。`,u:'円',ks:[2,3]}
+];
+function genWord(type){
+  if(type==='add'||type==='sub'){
+    const c=pick(type==='add'?W_ADD:W_SUB);const k=pick(c.ks);let a,b,ra,rb;
+    do{
+      a=rnd(c.lo,c.hi);b=rnd(c.lo,c.hi);
+      if(type==='sub'&&a<b){const t=a;a=b;b=t;}
+      ra=roundK(a,k);rb=roundK(b,k);
+    }while(a%P(k)===0||b%P(k)===0||(type==='sub'&&ra-rb<2*P(k)));
+    const ans=type==='add'?ra+rb:ra-rb;const sym=type==='add'?'＋':'−';
+    return {kind:'free',expr:{a:ra,op:sym,b:rb},html:`<p class="story">${c.f(a,b)}</p>`,inst:instr(k),answer:ans,unit:c.u,
+      explain:`${roundNote(a,ra)}、${roundNote(b,rb)}。<br>しき： ${fmt(ra)} ${sym} ${fmt(rb)} ＝ <b>${fmt(ans)}</b>`,
+      short:type==='add'?'たし算の文章問題':'ひき算の文章問題'};
+  }
+  if(type==='mulA'){
+    const c=pick(W_MA);const k=pick(c.ks);const lead=rnd(2,9),b=rnd(2,9);
+    const R=lead*P(k);const n=near(R,k);const ans=R*b;
+    return {kind:'free',expr:{a:R,op:'×',b:b},html:`<p class="story">${c.f(n,b)}</p>`,inst:instr(k),answer:ans,unit:c.u,
+      explain:`${roundNote(n,R)}。<br>しき： ${fmt(R)} × ${b}。九九で ${lead} × ${b} ＝ ${lead*b}、0を${k}こつけて <b>${fmt(ans)}</b>`,
+      short:'かけ算の文章問題'};
+  }
+  if(type==='mulB'){
+    const c=pick(W_MB);const m=mulB();
+    return {kind:'free',expr:{a:m.ra,op:'×',b:m.rb},html:`<p class="story">${c.f(m.a,m.b)}</p>`,inst:instr2(1),answer:m.ans,unit:c.u,
+      explain:`${roundNote(m.a,m.ra)}、${roundNote(m.b,m.rb)}。<br>しき： ${m.ra} × ${m.rb}。九九で ${m.la} × ${m.lb} ＝ ${m.la*m.lb}、0を2こつけて <b>${fmt(m.ans)}</b>`,
+      short:'かけ算の文章問題'};
+  }
+  const c=pick(W_DIV);const m=divP(c.ks);
+  return {kind:'free',expr:{a:m.R,op:'÷',b:m.d},html:`<p class="story">${c.f(m.n,m.d)}</p>`,inst:instr(m.k),answer:m.ans,unit:c.u,
+    explain:`${roundNote(m.n,m.R)}。<br>しき： ${fmt(m.R)} ÷ ${m.d}。九九で ${m.d*m.q} ÷ ${m.d} ＝ ${m.q}、0を${m.k}こつけて <b>${fmt(m.ans)}</b>`,
+    short:'わり算の文章問題'};
+}
+function makeQuestions(mode){
+  const out=[];
+  if(mode==='easy'){for(let i=0;i<5;i++)out.push(genEasy());}
+  else if(mode==='normal'){shuffle(['+','+','-','-',pick(['+','-'])]).forEach(o=>out.push(genNormal(o)));}
+  else if(mode==='hard'){shuffle(['mulA','mulB','div','div',pick(['mulA','div'])]).forEach(t=>out.push(genHard(t)));}
+  else{shuffle(['add','sub','mulA','div',pick(['add','sub','mulB','div','mulA'])]).forEach(t=>out.push(genWord(t)));}
+  return out;
+}
+//#GEN-END
+
+const MODE_NAME={easy:'かんたん',normal:'ふつう',hard:'むずかしい',extreme:'げきむず'};
+const $=s=>document.querySelector(s);
+const screens={start:$('#start'),game:$('#game'),result:$('#result')};
+const state={mode:null,qs:[],i:0,res:[],entry:[],pos:0,str:'',ex:['','','',''],act:0,locked:false};
+const cur=()=>state.qs[state.i];
+
+function show(name){
+  Object.keys(screens).forEach(k=>{screens[k].hidden=(k!==name);});
+  if(name!=='result')stopConfetti();
+  window.scrollTo(0,0);
+}
+let toastTimer=0;
+function toast(msg){
+  const t=$('#toast');t.textContent=msg;t.hidden=false;
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true;},3200);
+}
+
+/* ---------- clear badges ---------- */
+const CLEAR_KEY='gaisu-clear-v1';
+function readClear(){try{return JSON.parse(localStorage.getItem(CLEAR_KEY)||'{}')||{};}catch(e){return {};}}
+function writeClear(mode){try{const c=readClear();c[mode]=true;localStorage.setItem(CLEAR_KEY,JSON.stringify(c));}catch(e){}}
+function refreshBadges(){
+  const c=readClear();
+  document.querySelectorAll('.mode').forEach(b=>{
+    const old=b.querySelector('.done');if(old)old.remove();
+    if(c[b.dataset.mode]){const s=document.createElement('span');s.className='done';s.textContent='クリア';b.appendChild(s);}
+  });
+}
+
+/* ---------- audio (Web Audio, no external files) ---------- */
+let ac=null,master=null;
+function initAudio(){
+  try{
+    if(!ac){
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)return;
+      ac=new AC();master=ac.createGain();master.gain.value=.55;master.connect(ac.destination);
+    }
+    if(ac.state==='suspended')ac.resume();
+  }catch(e){}
+}
+function tone(midi,t0,dur,type,vol){
+  if(!ac)return;
+  const f=440*Math.pow(2,(midi-69)/12);
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type||'triangle';o.frequency.value=f;
+  const t=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(vol||.22,t+.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+.05);
+}
+function playSeq(seq){seq.forEach(n=>tone(n[0],n[1],n[2],n[3],n[4]));}
+const TUNES=[
+  [[72,0,.14],[74,.16,.14],[76,.32,.14],[79,.48,.14],[76,.64,.14],[79,.8,.14],[84,.96,.8],[76,.96,.8,'triangle',.1],[79,.96,.8,'triangle',.1],[60,0,.5,'sine',.15]],
+  [[79,0,.14],[83,.16,.14],[86,.32,.14],[83,.48,.14],[79,.64,.14],[83,.8,.14],[91,.96,.8],[83,.96,.8,'triangle',.1],[67,0,.5,'sine',.15]],
+  [[77,0,.14],[81,.16,.14],[84,.32,.14],[81,.48,.14],[84,.64,.14],[89,.8,.2],[84,1.02,.14],[89,1.2,.8],[81,1.2,.8,'triangle',.1],[65,0,.5,'sine',.15]],
+  [[72,0,.12],[74,.14,.12],[76,.28,.12],[79,.42,.12],[81,.56,.12],[84,.7,.12],[88,.84,.9],[79,.84,.9,'triangle',.1],[48,0,.6,'sine',.18]],
+  [[67,0,.2],[72,.2,.2],[76,.4,.2],[79,.6,.2],[76,.8,.2],[79,1,.2],[84,1.2,.9],[72,1.2,.9,'triangle',.1],[48,0,.8,'sine',.16]]
+];
+function playCorrect(i){initAudio();playSeq(TUNES[i%TUNES.length]);}
+function playWrong(){initAudio();playSeq([[67,0,.28,'sine',.2],[62,.26,.5,'sine',.2]]);}
+function playPerfect(){
+  initAudio();
+  const B=.24,o=.9;
+  // ファンファーレ
+  playSeq([[72,0,.14,'square',.08],[72,.16,.14,'square',.08],[72,.32,.14,'square',.08],[79,.5,.4,'square',.09],[76,.5,.4,'triangle',.18],[84,.5,.4,'triangle',.14]]);
+  const mel=[[72,0,.5],[76,.5,.5],[79,1,.5],[84,1.5,1.5],[83,3,.5],[79,3.5,.5],[81,4,.5],[77,4.5,1.5],
+    [76,6,.5],[79,6.5,.5],[84,7,.5],[88,7.5,1.5],[86,9,.5],[84,9.5,.5],[83,10,.5],[81,10.5,.5],[79,11,1],[84,12,3]];
+  mel.forEach(n=>{tone(n[0],o+n[1]*B,Math.max(.18,n[2]*B*.95),'triangle',.22);tone(n[0]-12,o+n[1]*B,Math.max(.18,n[2]*B*.95),'sine',.06);});
+  [[48,0,3],[43,3,1.5],[41,4.5,1.5],[48,6,3],[43,9,1.5],[43,10.5,1.5],[48,12,3]].forEach(n=>tone(n[0],o+n[1]*B,n[2]*B*.95,'sine',.2));
+  [[76,12,3],[79,12,3],[88,12,3]].forEach(n=>tone(n[0],o+n[1]*B,n[2]*B,'triangle',.1));
+}
+
+/* ---------- confetti (花吹雪) ---------- */
+const cv=$('#confetti'),cx=cv.getContext('2d');
+let parts=[],raf=0,spawnUntil=0;
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function sizeCv(){const dpr=Math.min(window.devicePixelRatio||1,2);cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);cx.setTransform(dpr,0,0,dpr,0,0);}
+const CONF=['#FFD23F','#4FC3F7','#7BE3B0','#FF9F68','#B39DFF','#FF8FAB'];
+function mkPart(burst){
+  const petal=Math.random()<.65;
+  return {petal,x:Math.random()*innerWidth,y:burst?-Math.random()*innerHeight*.7:-24,
+    vx:(Math.random()-.5)*1.4,vy:1.3+Math.random()*2.3,s:.8+Math.random()*.9,r:Math.random()*6.28,vr:(Math.random()-.5)*.09,
+    ph:Math.random()*6.28,sw:.5+Math.random()*1.3,
+    col:petal?pick(['#FFB7C5','#FF9DB5','#FFC9D6','#FFDDE5']):pick(CONF),w:9+Math.random()*6,h:5+Math.random()*5};
+}
+function drawPart(p){
+  const flip=Math.cos(p.ph*1.7);
+  cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.col;
+  if(p.petal){
+    cx.scale(p.s,p.s*(.45+.55*Math.abs(flip)));
+    cx.beginPath();cx.moveTo(0,-9);cx.bezierCurveTo(9,-14,14,-2,0,11);cx.bezierCurveTo(-14,-2,-9,-14,0,-9);cx.fill();
+  }else{
+    cx.scale(1,.35+.65*Math.abs(flip));
+    cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+  }
+  cx.restore();
+}
+function startConfetti(ms){
+  stopConfetti();sizeCv();cv.hidden=false;
+  const n=reduce?60:150;
+  for(let i=0;i<n;i++)parts.push(mkPart(true));
+  spawnUntil=performance.now()+ms;
+  const loop=()=>{
+    cx.clearRect(0,0,innerWidth,innerHeight);
+    if(performance.now()<spawnUntil){const m=reduce?1:2;for(let i=0;i<m;i++)if(Math.random()<.8)parts.push(mkPart(false));}
+    for(const p of parts){p.ph+=.05;p.x+=p.vx+Math.sin(p.ph)*p.sw;p.y+=p.vy;p.r+=p.vr;drawPart(p);}
+    parts=parts.filter(p=>p.y<innerHeight+30);
+    if(parts.length||performance.now()<spawnUntil)raf=requestAnimationFrame(loop);else stopConfetti();
+  };
+  raf=requestAnimationFrame(loop);
+}
+function stopConfetti(){cancelAnimationFrame(raf);parts=[];try{cx.clearRect(0,0,cv.width,cv.height);}catch(e){}cv.hidden=true;}
+window.addEventListener('resize',()=>{if(!cv.hidden)sizeCv();});
+
+/* ---------- game flow ---------- */
+function buildPad(ops){
+  const pad=$('#pad');pad.className='pad'+(ops?' ops':'');
+  const keys=ops?[1,2,3,'＋',4,5,6,'−',7,8,9,'×','del',0,'eq','÷','go']:[1,2,3,4,5,6,7,8,9,'del',0,'go'];
+  pad.innerHTML=keys.map(k=>{
+    if(k==='del')return '<button class="key del" type="button" data-k="del">けす</button>';
+    if(k==='go')return '<button class="key go" type="button" data-k="go" id="goKey" disabled>こたえる</button>';
+    if(k==='eq')return '<button class="key eq" type="button" data-k="eq" aria-label="イコール。答えの場所へ">＝</button>';
+    if(typeof k==='string')return `<button class="key opk" type="button" data-k="op" data-op="${k}" aria-label="${k}">${k}</button>`;
+    return `<button class="key" type="button" data-k="${k}" aria-label="${k}">${k}</button>`;
+  }).join('');
+}
+function startGame(mode){
+  initAudio();
+  state.mode=mode;state.qs=makeQuestions(mode);state.i=0;state.res=[];
+  const chip=$('#modeChip');chip.textContent=MODE_NAME[mode];
+  chip.style.setProperty('--c',`var(--${mode==='easy'?'green':mode==='normal'?'blue':mode==='hard'?'orange':'berry'})`);
+  buildPad(mode!=='easy');
+  show('game');renderQuestion();
+}
+function renderProg(){
+  $('#prog').innerHTML=state.qs.map((q,i)=>{
+    const r=state.res[i];const cls=r?(r.ok?'ok':'ng'):(i===state.i?'cur':'');
+    return `<span class="dot ${cls}">${i+1}</span>`;
+  }).join('');
+  $('#prog').setAttribute('aria-label',`${state.i+1}もんめ。5もんちゅう ${state.res.filter(r=>r.ok).length}もん せいかい`);
+}
+function chartHTML(q){
+  const digs=String(q.n).split('');const L=digs.length;
+  return '<div class="pv">'+digs.map((d,idx)=>{
+    const p=L-1-idx;const cls=(p===q.k-1?' look':'')+(p===q.k?' target':'');
+    return `<div class="cell${cls}"><span class="lab">${LAB[p]}</span><span class="box">${d}</span></div>`;
+  }).join('')+'</div>';
+}
+function renderQuestion(){
+  const q=cur();state.locked=false;state.str='';state.pos=0;
+  state.entry=q.kind==='boxes'?new Array(q.len).fill(null):[];
+  state.ex=['','','',''];state.act=0;
+  $('#qno').textContent=`だい ${state.i+1} もん`;
+  const leg=$('#legend');
+  if(q.kind==='boxes'){
+    $('#qbody').innerHTML=chartHTML(q)+'<div class="arrow" aria-hidden="true"></div>';
+    $('#qbody').style.cssText='display:flex;flex-direction:column;gap:10px';
+    leg.hidden=false;
+    leg.innerHTML=`<span><i class="sw blue"></i>${lowerName(q.k)}の位の数字を見る</span><span><i class="sw orange"></i>${placeName(q.k)}の位までのこす</span>`;
+  }else{
+    $('#qbody').style.cssText='';
+    $('#qbody').innerHTML=q.html;leg.hidden=false;
+    leg.innerHTML='<span>① がい数にした しきを 入れる → ② ＝ の あとに 答えを 入れる</span>';
+  }
+  $('#qinst').innerHTML=q.inst;
+  $('#pad').hidden=false;$('#fb').hidden=true;
+  renderProg();renderAnswer();
+}
+function renderAnswer(){
+  const q=cur();const box=$('#answer');
+  if(q.kind==='boxes'){
+    const L=q.len;
+    box.innerHTML='<p class="cap">こたえ</p><div class="pv">'+state.entry.map((v,idx)=>{
+      const p=L-1-idx;
+      return `<div class="cell${idx===state.pos&&!state.locked?' on':''}" data-i="${idx}"><span class="lab">${LAB[p]}</span><span class="box">${v==null?'':v}</span></div>`;
+    }).join('')+'</div>';
+  }else{
+    const txt=i=>i===1?state.ex[1]:(state.ex[i]?fmt(Number(state.ex[i])):'');
+    const sl=(i,ph,cls)=>`<button type="button" class="slot${cls?' '+cls:''}${state.act===i&&!state.locked?' on':''}" data-s="${i}"><span class="sv" data-ph="${ph}">${txt(i)}</span></button>`;
+    box.innerHTML=`<p class="cap">がい数に なおした しき</p><div class="eqrow">${sl(0,'1つめの数')}${sl(1,'きごう','opslot')}${sl(2,'2つめの数')}</div><p class="cap">こたえ</p><div class="eqrow"><span class="eqs">＝</span>${sl(3,'こたえ')}${q.unit?`<span class="un">${q.unit}</span>`:''}</div>`;
+  }
+  const ready=q.kind==='boxes'?state.entry.every(v=>v!=null):state.ex.every(v=>v!=='');
+  const go=$('#goKey');if(go)go.disabled=!ready||state.locked;
+}
+function press(d){
+  if(state.locked)return;const q=cur();
+  if(q.kind==='boxes'){state.entry[state.pos]=String(d);if(state.pos<q.len-1)state.pos++;}
+  else{
+    if(state.act===1)state.act=2;
+    const s=state.act;
+    if(state.ex[s]==='0')state.ex[s]='';
+    if(state.ex[s].length<7)state.ex[s]+=d;
+  }
+  renderAnswer();
+}
+function pressOp(sym){
+  if(state.locked||cur().kind!=='free')return;
+  state.ex[1]=sym;
+  if(state.act===0||state.act===1)state.act=2;
+  renderAnswer();
+}
+function pressEq(){
+  if(state.locked||cur().kind!=='free')return;
+  state.act=3;renderAnswer();
+}
+function del(){
+  if(state.locked)return;const q=cur();
+  if(q.kind==='boxes'){
+    if(state.entry[state.pos]!=null)state.entry[state.pos]=null;
+    else if(state.pos>0){state.pos--;state.entry[state.pos]=null;}
+  }else{
+    let s=state.act;
+    if(state.ex[s]===''&&s>0){s--;state.act=s;}
+    if(s===1)state.ex[1]='';else state.ex[s]=state.ex[s].slice(0,-1);
+  }
+  renderAnswer();
+}
+function submit(){
+  if(state.locked)return;const q=cur();
+  let ok,exprOk=true,ansOk=true;
+  if(q.kind==='boxes'){
+    if(!state.entry.every(v=>v!=null))return;
+    ok=state.entry.join('')===String(q.answer);
+  }else{
+    const ex=state.ex;
+    if(!ex.every(v=>v!==''))return;
+    const e=q.expr;
+    const straight=ex[0]===String(e.a)&&ex[2]===String(e.b);
+    const swapped=(e.op==='＋'||e.op==='×')&&ex[0]===String(e.b)&&ex[2]===String(e.a);
+    exprOk=ex[1]===e.op&&(straight||swapped);
+    ansOk=ex[3]===String(q.answer);
+    ok=exprOk&&ansOk;
+  }
+  state.locked=true;state.res.push({ok,q});
+  if(ok)playCorrect(state.i);else playWrong();
+  renderProg();renderAnswer();
+  $('#pad').hidden=true;
+  const fb=$('#fb');fb.hidden=false;fb.className='fb '+(ok?'ok':'ng');
+  $('#fbBig').textContent=ok?'せいかい！':'もうちょっと';
+  if(q.kind==='free'){
+    $('#fbAns').textContent=(ok?'しき： ':'せいかいの しき： ')+`${fmt(q.expr.a)} ${q.expr.op} ${fmt(q.expr.b)} ＝ ${fmt(q.answer)}${q.unit}`;
+  }else{
+    $('#fbAns').textContent=(ok?'こたえ： ':'せいかいは： ')+fmt(q.answer)+q.unit;
+  }
+  const note=(!ok&&q.kind==='free')?(exprOk?'しきは あっているよ。けいさんを たしかめよう。':ansOk?'こたえは あっているよ。がい数に なおした しきを 見なおそう。':''):'';
+  $('#fbWhy').innerHTML=(note?`<b>${note}</b><br>`:'')+q.explain;
+  $('#next').textContent=state.i<state.qs.length-1?'つぎへ':'けっかを みる';
+  $('#next').focus({preventScroll:true});
+}
+function goNext(){
+  if(!state.locked)return;
+  if(state.i<state.qs.length-1){state.i++;renderQuestion();window.scrollTo(0,0);}
+  else showResult();
+}
+function showResult(){
+  const n=state.res.filter(r=>r.ok).length;const perfect=n===state.qs.length;
+  show('result');
+  $('#rtag').textContent=MODE_NAME[state.mode]+' のけっか';
+  $('#rtitle').textContent=perfect?'ぜんもん せいかい！':n===4?'おしい！ あと1もん':n===3?'いいちょうし！':'ふくしゅうして もういちど！';
+  $('#rscore').textContent=`${n} / ${state.qs.length}`;
+  $('#rlist').innerHTML=state.res.map(r=>`<li class="${r.ok?'ok':'ng'}"><span class="mk">${r.ok?'○':'×'}</span><span class="sm">${r.q.short}</span><span class="an">${fmt(r.q.answer)}${r.q.unit}</span></li>`).join('');
+  if(perfect){writeClear(state.mode);refreshBadges();setTimeout(()=>{playPerfect();startConfetti(9000);},250);}
+}
+
+/* ---------- events ---------- */
+document.addEventListener('pointerdown',initAudio,{passive:true});
+document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>startGame(b.dataset.mode)));
+$('#pad').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;
+  if(k==='del')del();else if(k==='go')submit();else if(k==='op')pressOp(b.dataset.op);else if(k==='eq')pressEq();else press(Number(k));
+});
+$('#answer').addEventListener('click',e=>{
+  const sl=e.target.closest('.slot');
+  if(sl&&!state.locked&&cur().kind==='free'){state.act=Number(sl.dataset.s);renderAnswer();return;}
+  const c=e.target.closest('.cell');if(!c||state.locked||cur().kind!=='boxes')return;
+  state.pos=Number(c.dataset.i);renderAnswer();
+});
+$('#next').addEventListener('click',goNext);
+$('#again').addEventListener('click',()=>startGame(state.mode));
+$('#toStart').addEventListener('click',()=>{show('start');});
+let backTimer=0;
+$('#back').addEventListener('click',()=>{
+  const b=$('#back');
+  if(b.dataset.armed){clearTimeout(backTimer);delete b.dataset.armed;b.textContent='‹ もどる';show('start');return;}
+  b.dataset.armed='1';b.textContent='もういちど おすと もどるよ';
+  backTimer=setTimeout(()=>{delete b.dataset.armed;b.textContent='‹ もどる';},2600);
+});
+document.addEventListener('keydown',e=>{
+  if(screens.game.hidden)return;
+  if(e.key.length===1&&e.key>='0'&&e.key<='9'){press(Number(e.key));}
+  else if(e.key==='Backspace'){e.preventDefault();del();}
+  else if(cur().kind==='free'&&!state.locked&&(e.key==='='||{'+':1,'-':1,'*':1,'x':1,'/':1}[e.key])){
+    e.preventDefault();
+    if(e.key==='=')pressEq();else pressOp({'+':'＋','-':'−','*':'×','x':'×','/':'÷'}[e.key]);
+  }
+  else if(e.key==='Enter'){
+    if(e.target&&e.target.tagName==='BUTTON')return;
+    if(state.locked)goNext();else submit();
+  }
+});
+
+/* ---------- fullscreen ---------- */
+const fsBtn=$('#fs'),fsLabel=$('#fsLabel');
+const isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+function updateFs(){fsLabel.textContent=isFs()?'もとにもどす':'ぜんがめん';}
+fsBtn.addEventListener('click',async()=>{
+  try{
+    if(isFs()){await (document.exitFullscreen||document.webkitExitFullscreen).call(document);}
+    else{
+      const el=document.documentElement;const rq=el.requestFullscreen||el.webkitRequestFullscreen;
+      if(!rq)throw new Error('nofs');
+      await rq.call(el);
+    }
+  }catch(err){toast('この画面では 全画面に できません');}
+  updateFs();
+});
+document.addEventListener('fullscreenchange',updateFs);
+document.addEventListener('webkitfullscreenchange',updateFs);
+
+buildPad(false);refreshBadges();
+})();
+</script>
+
+</body></html>
