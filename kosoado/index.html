@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>こそあど言葉</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;background:#fff6d8;color:#3b2a1a;overflow:hidden}
+#app{position:relative;height:100%;background:linear-gradient(160deg,#fff6d8,#ffe0ec 55%,#d8f0ff)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:16px;overflow-y:auto}
+.screen.on{display:flex}
+#start{justify-content:center;text-align:center}
+h1{font-size:clamp(44px,12vw,96px);margin:0 0 10px;color:#ff6b3d;text-shadow:3px 3px 0 #fff,6px 6px 0 #ffd36b;letter-spacing:.06em}
+.sub{font-size:clamp(16px,4vw,24px);margin:0 0 32px;color:#6b4a2a}
+.btn{font:inherit;border:0;cursor:pointer;border-radius:999px;background:#ff6b3d;color:#fff;font-weight:700;font-size:clamp(22px,5vw,32px);padding:14px 52px;box-shadow:0 6px 0 #c9461f;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #c9461f}
+.btn.sub2{background:#4aa8e8;box-shadow:0 6px 0 #2a7fb8;font-size:20px;padding:10px 32px;margin-top:12px}
+#fs{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:10px;z-index:5;font:inherit;font-size:16px;font-weight:700;border:2px solid #6b4a2a;background:#fffdf3;color:#3b2a1a;border-radius:12px;padding:8px 12px;cursor:pointer}
+#credit{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-size:clamp(16px,4vw,22px);color:#6b4a2a;font-weight:700}
+#quiz{max-width:720px;margin:0 auto;width:100%;padding-top:48px}
+.top{display:flex;align-items:center;gap:10px;width:100%;margin-bottom:10px}
+.top b{font-size:20px;white-space:nowrap}
+.bar{flex:1;height:14px;background:#fff;border-radius:99px;overflow:hidden;border:2px solid #ffb88a}
+.bar i{display:block;height:100%;width:0;background:#ff6b3d;transition:width .4s}
+.scene{width:100%;background:#fffdf3;border:3px dashed #ffb88a;border-radius:16px;padding:10px 14px;font-size:clamp(15px,3.8vw,19px);margin-bottom:12px}
+.chat{width:100%;display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.row{display:flex;align-items:flex-end;gap:8px;max-width:92%}
+.row.r{flex-direction:row-reverse;align-self:flex-end}
+.av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px;background:#4aa8e8}
+.row.r .av{background:#f06fa0}
+.bub{background:#fff;border-radius:18px;padding:10px 14px;font-size:clamp(18px,4.8vw,24px);line-height:1.7;box-shadow:0 3px 0 rgba(0,0,0,.1)}
+.bub small{display:block;font-size:13px;color:#8a6a4a}
+.blank{display:inline-block;min-width:3.2em;border-bottom:4px solid #ff6b3d;text-align:center;color:#ff6b3d;font-weight:700}
+.ch{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.ch button{font:inherit;font-weight:700;font-size:clamp(22px,6vw,32px);padding:16px 8px;border-radius:18px;border:3px solid #ffb88a;background:#fff;color:#3b2a1a;cursor:pointer;box-shadow:0 5px 0 #ffb88a}
+.ch button:active{transform:translateY(3px)}
+.ch button.ng{background:#ececec;color:#aaa;border-color:#ccc;box-shadow:none;pointer-events:none}
+.ch button.ok{background:#8be28b;border-color:#3cb43c;box-shadow:0 5px 0 #3cb43c}
+#msg{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(0);font-size:clamp(40px,11vw,80px);font-weight:700;padding:14px 36px;border-radius:30px;pointer-events:none;z-index:8;white-space:nowrap}
+#msg.show{animation:pop 1s ease forwards}
+#msg.bad{background:#ffe1d4;color:#e04a1a;border:4px solid #e04a1a}
+#msg.good{background:#dcffd8;color:#27a02a;border:4px solid #27a02a}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(0)}20%{transform:translate(-50%,-50%) scale(1.15)}35%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+#result{justify-content:center;text-align:center}
+#result h2{font-size:clamp(34px,9vw,64px);margin:0 0 10px;color:#ff6b3d}
+#result p{font-size:clamp(18px,4.5vw,26px);margin:6px 0 20px}
+canvas{position:fixed;inset:0;pointer-events:none;z-index:7}
+</style>
+</head>
+<body>
+<div id="app">
+ <button id="fs" type="button">⛶ ぜんがめん</button>
+
+ <section id="start" class="screen on">
+  <h1>こそあど言葉</h1>
+  <p class="sub">ふさわしい ことばを えらぼう！</p>
+  <button class="btn" id="go" type="button">スタート</button>
+  <div id="credit">きだっち＠明倫小</div>
+ </section>
+
+ <section id="quiz" class="screen">
+  <div class="top"><b id="no">1/5</b><div class="bar"><i id="pg"></i></div></div>
+  <div class="scene" id="scene"></div>
+  <div class="chat" id="chat"></div>
+  <div class="ch" id="ch"></div>
+ </section>
+
+ <section id="result" class="screen">
+  <h2 id="rt"></h2>
+  <p id="rp"></p>
+  <button class="btn" id="again" type="button">もういちど</button>
+  <button class="btn sub2" id="home" type="button">はじめにもどる</button>
+ </section>
+</div>
+<div id="msg"></div>
+<canvas id="cv"></canvas>
+
+<script>
+const A=["これ","それ","あれ","どれ"],B=["この","その","あの","どの"],C=["ここ","そこ","あそこ","どこ"],
+D=["こんな","そんな","あんな","どんな"],E=["こう","そう","ああ","どう"],F=["こちら","そちら","あちら","どちら"];
+const Q=[
+["休み時間、さくらさんが ゆうたくんの 手に ある ボールを 見ています。",[["さくら","ゆうたくん、（　）は なあに？"],["ゆうた","これ？ ドッジボールだよ。"]],A,1],
+["こうえんで、とおくの 山を 見ています。",[["たろう","見て！ むこうに 高い 山が 見えるね。"],["みお","（　）山は なんていう 山かな？"]],B,2],
+["としょしつで 本を さがしています。",[["かい","ぼうけんの 本は（　）に あるのかな？"],["みく","あそこの たなに あるよ。"]],C,3],
+["ともだちが ころんで、ひざを けがしました。",[["ひなた","きのう じてんしゃで ころんじゃった。"],["まお","えっ、（　）けがを したの？ 見せて。"]],D,3],
+["くつばこの 前で まちあわせです。",[["そら","ゆいちゃん、どこに いるの？"],["ゆい","わたしは いま（　）に いるよ。くつばこの 前！"]],C,0],
+["ずこうの 時間、えんぴつの 色を じまんしています。",[["けんた","ぼくが いま 手に もっている（　）えんぴつ、きれいな 色でしょ？"],["みなみ","ほんとだ！ いい 色だね。"]],B,0],
+["みなみさんが たかしくんの くつを 見ています。",[["みなみ","たかしくん、（　）くつ、かっこいいね。どこで 買ったの？"],["たかし","ありがとう！ 家の 近くの お店だよ。"]],B,1],
+["そらに にじが 出ています。ずっと とおくの そらです。",[["みか","見て！ むこうの そらに にじが 出ているよ。"],["そうた","わあ、（　）きれいな にじ、はじめて 見た！"]],D,2],
+["さんすうの 時間、先生が 三本の ぼうを くらべています。",[["先生","三本の ぼうの うち、（　）が いちばん 長いでしょう？"],["あや","うーん、むずかしいな。"]],A,3],
+["電話で はなしています。",[["ゆうと","いま どこに いるの？"],["まい","こうえんに いるよ。"],["ゆうと","じゃあ、（　）まで むかえに 行くね。"]],C,1],
+["あしたの えんそくの はなしを しています。",[["ゆうま","あしたは 雨が ふるんだって。"],["みほ","えっ、（　）なの？ えんそく、ちゅうしかな。"]],E,1],
+["なわとびの れんしゅうを しています。",[["なおき","なわとびの とびかたを おしえて。"],["あすか","えっとね、（　）やって うでを まわすんだよ。"]],E,0],
+["さくらさんが ともだちを しょうかいします。",[["さくら","ゆうたくん、（　）は わたしの いとこの はるかちゃんだよ。"],["ゆうた","はじめまして！"]],F,0],
+["えんそくで おべんとうの 場所を きめています。",[["先生","むこうに 見える 大きな 木の ところで 食べましょう。"],["たけし","えっ、（　）まで 歩くんですか？"]],C,2],
+["つりの はなしを しています。",[["こうた","うでより 長い さかなを つったよ！"],["みさき","えっ、（　）に 大きい さかな、つれるの！？"]],D,1],
+["体いくの 時間、先生を さがしています。",[["たいち","あの 三人の うち、（　）人が 新しい 先生？"],["ひな","まんなかの 人だよ。"]],B,3],
+["かんなさんが かいた 絵を 見せています。",[["かんな","（　）を 見て！ いま わたしが かいたんだよ。"],["あきら","うわあ、じょうずだね！"]],A,0],
+["とおくに 赤い やねの 家が 見えます。",[["たいが","（　）は だれの 家かな？ ほら、とおくの 赤い やね。"],["りお","ああ、校長先生の 家だよ。"]],A,2],
+["先生に たいいくかんの 場所を きいています。",[["ゆい","先生、たいいくかんは（　）ですか？"],["先生","あちらですよ。"]],F,3],
+["さんすうの もんだいを 見ています。",[["ともや","この もんだい、むずかしいな。"],["りな","ほんとだね。（　）むずかしい もんだい、はじめて。"]],D,0],
+["きゅうしょくの 時間、手に もった パンを 見せています。",[["りく","（　）は ぼくの すきな くるみパンだよ。"],["ゆな","いいなあ、おいしそう！"]],A,0],
+["ゆなさんが りくくんの かばんを 見ています。",[["ゆな","りくくん、かばんに ついている（　）、かわいいね。"],["りく","これ？ 旅行で 買ったんだ。"]],A,1],
+["校ていで、とおくの 空を 見ています。",[["あや","空を とんでいる（　）は なに？ 鳥かな？"],["そうた","ひこうきだよ。"]],A,2],
+["ほうかご、ともだちと おやつを えらんでいます。",[["みく","おかしが 三つ あるよ。"],["かい","ぼくは（　）に しようかな。まようなあ。"]],A,3],
+["そうじの 時間、手に ぞうきんを もっています。",[["はると","（　）ぞうきん、ぬれすぎているから しぼってくるね。"],["ゆい","うん、おねがい。"]],B,0],
+["あきらくんが よんでいる 本を のぞきこんでいます。",[["みお","あきらくん、（　）本、おもしろい？ ぼくも よみたいな。"],["あきら","うん、とても おもしろいよ。"]],B,1],
+["バスの まどから、とおくの たてものを 見ています。",[["りん","おかあさん、（　）高い たてものは なあに？"],["おかあさん","あれは ちゅうおう びょういんよ。"]],B,2],
+["ぼうしやさんで ぼうしを えらんでいます。",[["かな","ぼうしが たくさん あるね。"],["そら","かなちゃんは（　）ぼうしが すき？"]],B,3],
+["かくれんぼで、おにに 見つかりました。",[["おに","いた！ どこに かくれていたの？"],["みさき","わたしは（　）に かくれていたの。この 木の うしろよ。"]],C,0],
+["体いくかんで、ゆうたくんの 足もとに ボールが あります。",[["さくら","ゆうたくん、（　）の ボール、とってくれる？"],["ゆうた","いいよ、はい どうぞ。"]],C,1],
+["校ていの むこうに ブランコが 見えます。",[["ゆうき","休み時間は（　）の ブランコで あそぼうよ。"],["ひなた","いいね！ 行こう！"]],C,2],
+["ずこうで ロボットを つくりました。",[["あお","ぼくは（　）ロボットを つくったよ。ほら、手が 四本 あるんだ。"],["りの","わあ、おもしろい！"]],D,0],
+["ともだちが おもちゃを なくして こまっています。",[["ゆうま","大切な おもちゃを なくしちゃった…。"],["さき","（　）に かなしまないで。いっしょに さがそう。"]],D,1],
+["とおくの 空に 花火が 上がっています。",[["かずき","むこうで 花火が 上がっているよ。"],["ゆい","わあ、（　）大きな 花火、見たことないね！"]],D,2],
+["ともだちの かうペットの はなしです。",[["いお","うちで ねこを かうことに なったよ。"],["ゆか","えっ、（　）ねこ？ 白い ねこ？"]],D,3],
+["とおくで、つりを している 人を 見ています。",[["けいた","見て、むこうの 人は（　）やって つりを するんだね。"],["りか","ほんとだ。まねして みよう。"]],E,2],
+["さんすうの とき方が わかりません。",[["ゆうた","この もんだい、（　）やって とくの？ おしえて。"],["あや","まず、たし算を するんだよ。"]],E,3],
+["でんわで ともだちの いえに かけています。",[["ゆり","もしもし、（　）は 山田さんの おうちですか？"],["お母さん","はい、そうですよ。"]],F,1],
+["えんそくで、とおくの トイレを 先生が 教えています。",[["あみ","先生、トイレは どこですか？"],["先生","むこうに 見える たてものの 中です。（　）ですよ。"]],F,2],
+["はっぴょう会で、おきゃくさんを 自分の すぐ そばの せきに あんないします。",[["みなと","いらっしゃいませ。（　）の せきへ どうぞ。"],["おきゃく","ありがとう。"]],F,0]
+];
+const $=id=>document.getElementById(id);
+let ctx=null,music=false,timer=null,cur=[],idx=0,miss=0,locked=false;
+
+/* ---- audio ---- */
+function tone(f,t,d,type,v){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type||'sine';o.frequency.value=f;
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.15,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+d);
+ o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+d+.05)}
+function sfx(k){if(!ctx)return;const t=ctx.currentTime;
+ if(k==='ok'){tone(784,t,.15,'triangle',.2);tone(1047,t+.12,.3,'triangle',.2)}
+ else{tone(260,t,.18,'sawtooth',.1);tone(200,t+.16,.3,'sawtooth',.1)}}
+const N={C:523.25,D:587.33,E:659.25,F:698.46,G:783.99,A:880,B:987.77,H:1046.5};
+const MEL="CEGHGEGHAHFAGEDG".split(''),BASS=[130.81,110,87.31,98];
+function bar(){if(!music)return;const t=ctx.currentTime+.05;
+ MEL.forEach((n,i)=>tone(N[n],t+i*.2,.3,'triangle',.12));
+ BASS.forEach((f,i)=>tone(f,t+i*.8,.75,'sine',.18));
+ timer=setTimeout(bar,3200)}
+function startMusic(){if(!ctx)return;music=true;const t=ctx.currentTime+.05;
+ [N.C,N.E,N.G,N.H,N.G,N.H].forEach((f,i)=>tone(f,t+i*.12,.35,'square',.08));
+ timer=setTimeout(bar,900)}
+function stopMusic(){music=false;clearTimeout(timer)}
+
+/* ---- confetti / petals ---- */
+const cv=$('cv'),g2=cv.getContext('2d');let ps=[],raf=0;
+function fit(){cv.width=innerWidth;cv.height=innerHeight}addEventListener('resize',fit);fit();
+function spawn(n){const cols=['#ff8fb8','#ffc2d6','#ffd36b','#7ed6ff','#a6f08a','#ff6b3d'];
+ for(let i=0;i<n;i++)ps.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,vx:(Math.random()-.5)*2,vy:2+Math.random()*3,
+ r:Math.random()*6.3,vr:(Math.random()-.5)*.2,s:6+Math.random()*8,c:cols[i%cols.length],petal:Math.random()<.6})}
+function loop(){g2.clearRect(0,0,cv.width,cv.height);
+ ps.forEach(p=>{p.x+=p.vx+Math.sin(p.y/40);p.y+=p.vy;p.r+=p.vr;g2.save();g2.translate(p.x,p.y);g2.rotate(p.r);g2.fillStyle=p.c;
+  g2.beginPath();if(p.petal)g2.ellipse(0,0,p.s,p.s/2,0,0,6.3);else g2.rect(-p.s/2,-p.s/3,p.s,p.s*.66);g2.fill();g2.restore()});
+ ps=ps.filter(p=>p.y<cv.height+30);
+ if(raf>0){if(raf%6===0)spawn(5);raf++}
+ if(raf>0||ps.length)requestAnimationFrame(loop);else g2.clearRect(0,0,cv.width,cv.height)}
+function startConfetti(){spawn(120);raf=1;loop()}
+function stopConfetti(){raf=0;ps=[]}
+
+/* ---- game ---- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function msg(t,c){const m=$('msg');m.textContent=t;m.className='';void m.offsetWidth;m.className='show '+c}
+function begin(){
+ if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+ if(ctx&&ctx.state==='suspended')ctx.resume();
+ stopMusic();stopConfetti();cur=shuffle(Q).slice(0,5);idx=0;miss=0;show('quiz');ask()}
+function ask(){
+ locked=false;const q=cur[idx];
+ $('no').textContent=(idx+1)+'/5';$('pg').style.width=(idx/5*100)+'%';$('scene').textContent='🏫 '+q[0];
+ const names=[];
+ $('chat').innerHTML=q[1].map(l=>{if(!names.includes(l[0]))names.push(l[0]);const r=names.indexOf(l[0])%2;
+  const t=l[1].replace('（　）','<span class="blank" id="bl">　　</span>');
+  return `<div class="row${r?' r':''}"><div class="av">${l[0][0]}</div><div class="bub"><small>${l[0]}</small>${t}</div></div>`}).join('');
+ $('ch').innerHTML='';
+ shuffle(q[2].map((w,i)=>({w,ok:i===q[3]}))).forEach(o=>{
+  const b=document.createElement('button');b.type='button';b.textContent=o.w;b.onclick=()=>pick(b,o);$('ch').appendChild(b)})}
+function pick(b,o){
+ if(locked)return;
+ if(o.ok){locked=true;b.classList.add('ok');const bl=$('bl');if(bl)bl.textContent=o.w;sfx('ok');msg('せいかい！','good');
+  setTimeout(()=>{idx++;if(idx>=5)finish();else ask()},1200)}
+ else{miss++;b.classList.add('ng');sfx('ng');msg('もうちょっと','bad')}}
+function finish(){
+ $('pg').style.width='100%';show('result');
+ if(miss===0){$('rt').textContent='🎉 ぜんもん せいかい！ 🎉';$('rp').textContent='すごい！ こそあど言葉の めいじんだね！';startConfetti();startMusic()}
+ else{$('rt').textContent='おつかれさま！';$('rp').textContent='まちがえた 回数は '+miss+' 回。もういちど ちょうせんしよう！'}}
+$('go').onclick=begin;$('again').onclick=begin;
+$('home').onclick=()=>{stopMusic();stopConfetti();show('start')};
+$('fs').onclick=()=>{try{if(document.fullscreenElement)document.exitFullscreen();else (document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen).call(document.documentElement)}catch(e){}};
+</script>
+</body>
+</html>
